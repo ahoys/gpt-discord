@@ -1,5 +1,8 @@
+import webpack from 'webpack';
 import path from 'path';
-import DotEnv from 'dotenv-webpack';
+import DotEnv from 'dotenv';
+
+DotEnv.config();
 
 export default {
   name: 'production',
@@ -23,11 +26,10 @@ export default {
     modules: ['node_modules'],
   },
   plugins: [
-    new DotEnv({
-      path:
-        process.env.NODE_ENV === 'development'
-          ? path.join(__dirname, '.dev')
-          : path.join(__dirname, '.env'),
+    new webpack.EnvironmentPlugin({
+      OPENAI_APIKEY: undefined, // mandatory. If not set, the build will fail.
+      DISCORD_APPID: undefined,
+      DISCORD_TOKEN: undefined,
     }),
   ],
   optimization: {
