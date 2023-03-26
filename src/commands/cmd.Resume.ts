@@ -3,6 +3,9 @@ import { ICmdProps } from '..';
 
 const name = 'resume';
 
+/**
+ * Will resume GPT functions.
+ */
 export default {
   name,
   data: new SlashCommandBuilder()

@@ -1,4 +1,6 @@
 import config from './config';
+import DataStore from 'nedb';
+import CmdModel from './commands/cmd.Model';
 import CmdResume from './commands/cmd.Resume';
 import CmdPause from './commands/cmd.Pause';
 import {
@@ -14,17 +16,30 @@ import { Configuration, OpenAIApi } from 'openai';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 
-let paused = false;
+/**
+ * Define the database.
+ */
+const db = {
+  models: new DataStore({
+    filename: 'models.nedb',
+    autoload: true,
+    inMemoryOnly: false,
+  }),
+};
 
 /**
- * Handle pause state.
+ * If paused, the bot will not respond to GPT-messages.
  */
+let paused = false;
 const handlePause = (v: boolean) => (paused = v);
 
 /**
  * Command properties.
  */
 export interface ICmdProps {
+  db: {
+    models: DataStore;
+  };
   interaction: ChatInputCommandInteraction;
   openai: OpenAIApi;
   paused: boolean;
@@ -52,6 +67,7 @@ const client = new DiscordJs({
 }) as IDiscordClient;
 
 client.commands = new Collection();
+client.commands.set(CmdModel.name, CmdModel);
 client.commands.set(CmdResume.name, CmdResume);
 client.commands.set(CmdPause.name, CmdPause);
 
@@ -95,7 +111,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return;
   }
   try {
-    const properties: ICmdProps = { interaction, openai, paused, handlePause };
+    const properties: ICmdProps = {
+      db,
+      interaction,
+      openai,
+      paused,
+      handlePause,
+    };
     await command.execute(properties);
   } catch (error) {
     print(`Error executing command ${interaction.commandName}: ${error}`);
@@ -120,45 +142,77 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageCreate, async (message) => {
   try {
     if (client?.user) {
+      const channel = message?.channel;
       if (!message.mentions.has(client.user)) return;
       if (message.author.bot) return;
       if (paused) return;
+      if (!channel) return;
       const content = message.content?.replace(/<@\d+>\s/, '');
       if (
         typeof content === 'string' &&
         content.length > 2 &&
         content.length < 1024
       ) {
-        openai
-          .createChatCompletion({
-            model: config.openai.model,
-            temperature: config.openai.temperature,
-            max_tokens: config.openai.maxTokens,
-            messages: [
-              {
-                role: 'user',
-                content,
-              },
-            ],
-            n: 1,
-            stream: false,
-          })
-          .then((response) => {
-            if (response.data.choices) {
-              const firstChoice = response.data.choices[0];
-              if (typeof firstChoice.message?.content === 'string') {
-                return message.reply(firstChoice.message.content);
-              } else {
-                message.react('👎');
-              }
-            } else {
-              message.react('👎');
-            }
-          })
-          .catch((error) => {
-            print(error);
-            message.react('👎');
-          });
+        db.models.findOne({ channel: channel.id }, (err, modelDoc) => {
+          // Look for a pre-defined model for this channel.
+          const model = modelDoc?.model ?? config.openai.model;
+          // Optimize temperatures in certain models.
+          const temperatures: { [key: string]: number } = {
+            default: 0.8,
+            'code-davinci-002': 0,
+          };
+          const temperature = temperatures[model]
+            ? temperatures[model]
+            : temperatures.default;
+          const personas: { [key: string]: string } = {
+            default: 'You are an assistant on a Discord server.',
+            'code-davinci-002':
+              'You are a programming assistant on a Discord server.',
+          };
+          if (err) {
+            print(err);
+            message.react('🛑');
+          } else {
+            // Send the request to OpenAI.
+            openai
+              .createChatCompletion({
+                model,
+                temperature,
+                max_tokens: config.openai.maxTokens,
+                messages: [
+                  {
+                    role: 'system',
+                    content: personas[model] || personas.default,
+                  },
+                  {
+                    role: 'user',
+                    content,
+                  },
+                ],
+                n: 1,
+                stream: false,
+              })
+              .then((response) => {
+                if (response.data.choices) {
+                  const firstChoice = response.data.choices[0];
+                  if (typeof firstChoice.message?.content === 'string') {
+                    return message.reply(firstChoice.message.content);
+                  } else {
+                    message.react('👎');
+                  }
+                } else {
+                  message.react('👎');
+                }
+              })
+              .catch((error) => {
+                print(error?.message);
+                message.reply(
+                  'Cannot connect to OpenAI API. ' +
+                    'Try again later or make sure you have got the right subscription.'
+                );
+              });
+          }
+        });
       } else {
         message.react('👎');
       }

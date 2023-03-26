@@ -3,6 +3,9 @@ import { ICmdProps } from '..';
 
 const name = 'pause';
 
+/**
+ * Will pause GPT functions.
+ */
 export default {
   name,
   data: new SlashCommandBuilder()
