@@ -8,10 +8,6 @@ A discord bot that uses Open AI ChatCompletion to have conversations with guild 
 - Discord application for the bot.
 - Modern Node.js installed.
 
-### Discord application configuration
-
-You need to invite the bot onto your server. When doing this, make sure you have allowed "bot", "applications.commands", "send messages" and "add reactions".
-
 ## Configuration
 
 Create an .env file at the root of the project folder.
@@ -35,3 +31,7 @@ DISCORD_ROLEID=Discord role with permissions to commands.
 - After you have created the .env file, run `yarn install && yarn build`
 - A `build` directory will appear that will contain the finished application.
 - Run the application with Node.
+
+## Inviting the bot
+
+You need to invite the bot onto your server. When doing this, make sure you have the following permissions enabled: `bot`, `applications.commands`, `send messages` and `add reactions`.
