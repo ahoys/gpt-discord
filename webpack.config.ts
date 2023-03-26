@@ -1,9 +1,14 @@
 import webpack from 'webpack';
 import path from 'path';
-import DotEnv from 'dotenv';
 import nodeExternals from 'webpack-node-externals';
+import DotEnv from 'dotenv';
 
-DotEnv.config();
+DotEnv.config({
+  path:
+    process.env.NODE_ENV === 'development'
+      ? path.join(__dirname, '.dev.env')
+      : path.join(__dirname, '.env'),
+});
 
 export default {
   name: 'production',
