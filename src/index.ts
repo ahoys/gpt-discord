@@ -12,7 +12,7 @@ import {
   GuildMemberRoleManager,
 } from 'discord.js';
 import { print } from 'logscribe';
-import { Configuration, OpenAIApi } from 'openai';
+import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 
@@ -161,29 +161,33 @@ client.on(Events.MessageCreate, async (message) => {
             default: 0.8,
             'code-davinci-002': 0,
           };
-          const temperature = temperatures[model]
-            ? temperatures[model]
-            : temperatures.default;
+          const temperature =
+            typeof temperatures[model] === 'number'
+              ? temperatures[model]
+              : temperatures.default;
           if (err) {
             print(err);
             message.react('🛑');
           } else {
             // Send the request to OpenAI.
+            const messages: ChatCompletionRequestMessage[] = [
+              {
+                role: 'user',
+                content,
+              },
+            ];
+            if (config.openai.system) {
+              messages.unshift({
+                role: 'system',
+                content: config.openai.system,
+              });
+            }
             openai
               .createChatCompletion({
                 model,
                 temperature,
                 max_tokens: config.openai.maxTokens,
-                messages: [
-                  {
-                    role: 'system',
-                    content: config.openai.system,
-                  },
-                  {
-                    role: 'user',
-                    content,
-                  },
-                ],
+                messages,
                 n: 1,
                 stream: false,
               })
@@ -200,11 +204,13 @@ client.on(Events.MessageCreate, async (message) => {
                 }
               })
               .catch((error) => {
-                print(error?.message);
-                message.reply(
-                  'Cannot connect to OpenAI API. ' +
-                    'Try again later or make sure you have got the right subscription.'
-                );
+                print({
+                  model,
+                  temperature,
+                  message: error?.message,
+                  content,
+                });
+                message.reply('Cannot connect to OpenAI API.');
               });
           }
         });
