@@ -21,6 +21,7 @@ OPENAI_APIKEY=OpenAI application key.
 OPENAI_MODEL=See OpenAPI reference manual (#model).
 OPENAI_TEMPERATURE=See OpenAPI reference manual (#temperature).
 OPENAI_MAXTOKENS=How many tokens can a singular request cost?
+OPENAI_SYSTEM=With a one sentense describe the bot. (optional).
 DISCORD_APPID=Discord application key.
 DISCORD_TOKEN=Discord Bot token.
 DISCORD_ROLEID=Discord role with permissions to commands.

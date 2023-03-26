@@ -164,11 +164,6 @@ client.on(Events.MessageCreate, async (message) => {
           const temperature = temperatures[model]
             ? temperatures[model]
             : temperatures.default;
-          const personas: { [key: string]: string } = {
-            default: 'You are an assistant on a Discord server.',
-            'code-davinci-002':
-              'You are a programming assistant on a Discord server.',
-          };
           if (err) {
             print(err);
             message.react('🛑');
@@ -182,7 +177,7 @@ client.on(Events.MessageCreate, async (message) => {
                 messages: [
                   {
                     role: 'system',
-                    content: personas[model] || personas.default,
+                    content: config.openai.system,
                   },
                   {
                     role: 'user',

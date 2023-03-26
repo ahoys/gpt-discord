@@ -36,6 +36,7 @@ export default {
       OPENAI_MODEL: null,
       OPENAI_TEMPERATURE: null,
       OPENAI_MAXTOKENS: null,
+      OPENAI_SYSTEM: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,
       DISCORD_ROLEID: undefined,

@@ -4,6 +4,8 @@ const production = {
     model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
     temperature: Number(process.env.OPENAI_TEMPERATURE) || 0.5,
     maxTokens: Number(process.env.OPENAI_MAXTOKENS) || 1000,
+    system:
+      process.env.OPENAI_SYSTEM || 'You are an assistant on a Discord server.',
   },
   discord: {
     appId: process.env.DISCORD_APPID,
