@@ -1,6 +1,7 @@
 import webpack from 'webpack';
 import path from 'path';
 import DotEnv from 'dotenv';
+import nodeExternals from 'webpack-node-externals';
 
 DotEnv.config();
 
@@ -35,4 +36,5 @@ export default {
   optimization: {
     minimize: false,
   },
+  externals: [nodeExternals()],
 };
