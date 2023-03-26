@@ -29,8 +29,12 @@ export default {
   plugins: [
     new webpack.EnvironmentPlugin({
       OPENAI_APIKEY: undefined, // mandatory. If not set, the build will fail.
+      OPENAI_MODEL: null,
+      OPENAI_TEMPERATURE: null,
+      OPENAI_MAXTOKENS: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,
+      DISCORD_ROLEID: undefined,
     }),
   ],
   optimization: {
