@@ -6,6 +6,9 @@ const production = {
     maxTokens: Number(process.env.OPENAI_MAXTOKENS) || 1000,
     system:
       process.env.OPENAI_SYSTEM || 'You are an assistant on a Discord server.',
+    embeddingInput: process.env.OPENAI_EMBEDDINGINPUT || 'input.json',
+    embeddingOutput: process.env.OPENAI_EMBEDDINGOUTPUT || 'output.json',
+    embeddingMaxTokens: Number(process.env.OPENAI_EMBEDDINGMAXTOKENS) || 2000,
   },
   discord: {
     appId: process.env.DISCORD_APPID,

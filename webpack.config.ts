@@ -2,14 +2,16 @@ import webpack from 'webpack';
 import path from 'path';
 import DotEnv from 'dotenv';
 
+export const envPath =
+  process.env.NODE_ENV === 'development'
+    ? path.join(__dirname, '.dev.env')
+    : path.join(__dirname, '.env');
+
 DotEnv.config({
-  path:
-    process.env.NODE_ENV === 'development'
-      ? path.join(__dirname, '.dev.env')
-      : path.join(__dirname, '.env'),
+  path: envPath,
 });
 
-export default {
+const config = {
   name: 'production',
   target: 'node',
   entry: path.resolve(__dirname, './src/index.ts'),
@@ -37,6 +39,9 @@ export default {
       OPENAI_TEMPERATURE: null,
       OPENAI_MAXTOKENS: null,
       OPENAI_SYSTEM: null,
+      OPENAI_EMBEDDINGINPUT: null,
+      OPENAI_EMBEDDINGMAXTOKENS: null,
+      OPENAI_EMBEDDINGOUTPUT: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,
       DISCORD_ROLEID: undefined,
@@ -46,3 +51,5 @@ export default {
     minimize: false,
   },
 };
+
+export default config;
