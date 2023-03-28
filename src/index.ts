@@ -187,7 +187,9 @@ client.on(Events.MessageCreate, async (message) => {
               model: doc?.model ?? config.openai.model,
               context: doc?.length ?? config.openai.defaultContextLength,
               temperature:
-                doc?.temperature !== undefined ? Number(doc.temperature) : 0.8,
+                doc?.temperature !== undefined
+                  ? Number(doc.temperature)
+                  : config.openai.temperature,
             };
             // Send request to OpenAI.
             openai
