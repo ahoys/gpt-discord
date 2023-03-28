@@ -177,7 +177,7 @@ client.on(Events.MessageCreate, async (message) => {
             // Build configuration for the channel.
             const configuration = {
               model: doc?.model ?? config.openai.model,
-              context: doc?.length ?? 0,
+              context: doc?.length ?? config.openai.defaultContextLength,
               temperature:
                 doc?.temperature !== undefined ? Number(doc.temperature) : 0.8,
             };

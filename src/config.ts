@@ -9,6 +9,7 @@ const production = {
     embeddingInput: process.env.OPENAI_EMBEDDINGINPUT || 'input.json',
     embeddingOutput: process.env.OPENAI_EMBEDDINGOUTPUT || 'output.json',
     embeddingMaxTokens: Number(process.env.OPENAI_EMBEDDINGMAXTOKENS) || 2000,
+    defaultContextLength: Number(process.env.OPENAI_DEFAULTCONTEXTLENGTH) || 0,
   },
   discord: {
     appId: process.env.DISCORD_APPID,
