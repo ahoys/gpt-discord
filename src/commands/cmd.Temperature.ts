@@ -34,9 +34,10 @@ export default {
     const temperaturePercentage = interaction.options.getInteger('temperature');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply(
-        `Temperature for ${channel?.name} failed to updated.`
-      );
+      await interaction.reply({
+        content: `Temperature for ${channel?.name} failed to updated.`,
+        ephemeral: true,
+      });
     };
     if (
       typeof guild === 'string' &&
@@ -62,9 +63,10 @@ export default {
               if (updateErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply(
-                  `Temperature for ${channel.name} updated to ${temperature}.`
-                );
+                await interaction.reply({
+                  content: `Temperature for ${channel.name} updated to ${temperature}.`,
+                  ephemeral: true,
+                });
               }
             }
           );
@@ -73,9 +75,10 @@ export default {
             if (insertErr) {
               await handleFailure(err);
             } else {
-              await interaction.reply(
-                `Temperature for ${channel.name} saved to ${temperature}.`
-              );
+              await interaction.reply({
+                content: `Temperature for ${channel.name} saved to ${temperature}.`,
+                ephemeral: true,
+              });
             }
           });
         }

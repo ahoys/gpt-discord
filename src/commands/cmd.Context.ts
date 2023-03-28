@@ -36,9 +36,10 @@ export default {
     const length = interaction.options.getInteger('length');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply(
-        `Context for ${channel?.name} failed to updated.`
-      );
+      await interaction.reply({
+        content: `Context for ${channel?.name} failed to updated.`,
+        ephemeral: true,
+      });
     };
     if (
       typeof guild === 'string' &&
@@ -59,9 +60,10 @@ export default {
               if (updateErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply(
-                  `Context length for ${channel.name} updated to ${length}.`
-                );
+                await interaction.reply({
+                  content: `Context length for ${channel.name} updated to ${length}.`,
+                  ephemeral: true,
+                });
               }
             }
           );
@@ -70,9 +72,10 @@ export default {
             if (insertErr) {
               await handleFailure(err);
             } else {
-              await interaction.reply(
-                `Context length for ${channel.name} saved to ${length}.`
-              );
+              await interaction.reply({
+                content: `Context length for ${channel.name} saved to ${length}.`,
+                ephemeral: true,
+              });
             }
           });
         }

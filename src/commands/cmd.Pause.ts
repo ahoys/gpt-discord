@@ -13,10 +13,16 @@ export default {
     .setDescription('Will pause GPT functions.'),
   execute: async ({ interaction, paused, handlePause }: ICmdProps) => {
     if (paused) {
-      await interaction.reply('Already paused.');
+      await interaction.reply({
+        content: 'GPT is already paused.',
+        ephemeral: true,
+      });
     } else {
       handlePause(true);
-      await interaction.reply('GPT paused.');
+      await interaction.reply({
+        content: 'GPT has been paused.',
+        ephemeral: true,
+      });
     }
   },
 };

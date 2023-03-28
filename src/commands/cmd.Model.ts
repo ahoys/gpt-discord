@@ -34,7 +34,10 @@ export default {
     const model = interaction.options.getString('model');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply(`Model for ${channel?.name} failed to updated.`);
+      await interaction.reply({
+        content: `Model for ${channel?.name} failed to updated.`,
+        ephemeral: true,
+      });
     };
     if (
       typeof guild === 'string' &&
@@ -57,7 +60,10 @@ export default {
                 if (updateErr) {
                   await handleFailure(err);
                 } else {
-                  await interaction.reply(`Model for ${channel.name} updated.`);
+                  await interaction.reply({
+                    content: `Model for ${channel.name} updated to ${model}.`,
+                    ephemeral: true,
+                  });
                 }
               }
             );
@@ -66,7 +72,10 @@ export default {
               if (insertErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply(`Model for ${channel.name} updated.`);
+                await interaction.reply({
+                  content: `Model for ${channel.name} saved to ${model}.`,
+                  ephemeral: true,
+                });
               }
             });
           }

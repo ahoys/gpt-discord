@@ -14,9 +14,15 @@ export default {
   execute: async ({ interaction, paused, handlePause }: ICmdProps) => {
     if (paused) {
       handlePause(false);
-      await interaction.reply('Resumed GPT.');
+      await interaction.reply({
+        content: 'GPT has been resumed.',
+        ephemeral: true,
+      });
     } else {
-      await interaction.reply('Already resumed.');
+      await interaction.reply({
+        content: 'GPT is not paused.',
+        ephemeral: true,
+      });
     }
   },
 };
