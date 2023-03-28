@@ -7,11 +7,12 @@ import {
 } from '../utilities/utilities.memory';
 import { Message } from 'discord.js';
 import { print } from 'logscribe';
+import { splitString } from '../utilities/utilities.discord';
 
 /**
  * Execute a chat completion.
  */
-export const executeChatCompletion = (
+export const executeChatCompletion = async (
   openai: OpenAIApi,
   message: Message,
   id: string,
@@ -32,21 +33,30 @@ export const executeChatCompletion = (
       n: 1,
       stream: false,
     })
-    .then((response) => {
+    .then(async (response) => {
       if (response?.data?.choices) {
         const firstChoice = response.data.choices[0];
         if (typeof firstChoice.message?.content === 'string') {
-          message.reply(firstChoice.message.content);
+          const msg = firstChoice.message?.content;
+          if (msg.length >= 2000) {
+            // Maximum reply length is 2000 characters.
+            const splits = splitString(msg);
+            for (const part of splits) {
+              await message.channel.send(part).catch((error) => print(error));
+            }
+          } else {
+            message.reply(msg).catch((error) => print(error));
+          }
           updateContextWithResponse(
             id,
             message.author.id,
             firstChoice.message.content
           );
         } else {
-          message.react('👎');
+          message.react('👎').catch((error) => print(error));
         }
       } else {
-        message.react('👎');
+        message.react('👎').catch((error) => print(error));
       }
     })
     .catch((error) => {

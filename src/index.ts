@@ -178,19 +178,19 @@ client.on(Events.MessageCreate, async (message) => {
       const content = message.content?.replace(/<@\d+>\s/, '');
       if (typeof content !== 'string') {
         print('Content is not a string.');
-        message.react('🛑');
+        message.react('🛑').catch((error) => print(error));
       } else if (content.length <= 2) {
         print('Content is too short.');
-        message.react('👎');
+        message.react('👎').catch((error) => print(error));
       } else if (content.length >= config.openai.maxContentLength) {
         print('Content is too long.');
-        message.react('👎');
+        message.react('👎').catch((error) => print(error));
       } else {
         const id = getId(message.guild.id, channel.id);
         db.channels.findOne({ channel: id }, (err, doc) => {
           if (err) {
             print(err);
-            message.react('🛑');
+            message.react('🛑').catch((error) => print(error));
           } else {
             // Build configuration for the channel.
             const configuration: IModelConfiguration = {
