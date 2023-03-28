@@ -28,20 +28,29 @@ export const getContext = (
 ): ChatCompletionRequestMessage[] => {
   let messages: ChatCompletionRequestMessage[] = [];
   if (author && content) {
-    messages = memory[id] ? [...(memory[id][author] || [])] : [];
-    messages.push({
-      role: 'user',
-      content: String(content),
-    });
-    const len = messages.filter((e) => e.role === 'user').length;
-    if (len > maxLength + 1) {
-      messages.splice(0, len - (maxLength - 1));
-    }
-    if (memory[id]) {
-      memory[id][author] = messages;
+    if (maxLength <= 0) {
+      messages = [
+        {
+          role: 'user',
+          content: String(content),
+        },
+      ];
     } else {
-      memory[id] = {};
-      memory[id][author] = messages;
+      messages = memory[id] ? [...(memory[id][author] || [])] : [];
+      messages.push({
+        role: 'user',
+        content: String(content),
+      });
+      const len = messages.filter((e) => e.role === 'user').length;
+      if (len > maxLength + 1) {
+        messages.splice(0, len - (maxLength - 1));
+      }
+      if (memory[id]) {
+        memory[id][author] = messages;
+      } else {
+        memory[id] = {};
+        memory[id][author] = messages;
+      }
     }
   }
   if (config.openai.system && !messages.find((e) => e.role === 'system')) {
