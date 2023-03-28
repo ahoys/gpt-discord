@@ -106,11 +106,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (!interaction.guild) return;
   if (!interaction.member) return;
-  if (
-    !(interaction.member.roles as GuildMemberRoleManager).cache.has(
-      config.discord.role ?? ''
-    )
-  ) {
+  let roleFound = !config.discord.role;
+  if (config.discord.role) {
+    for (const roleId of config.discord.role.split(',')) {
+      if (
+        !roleFound &&
+        (interaction.member.roles as GuildMemberRoleManager).cache.has(roleId)
+      ) {
+        roleFound = true;
+      }
+    }
+  }
+  if (!roleFound) {
+    interaction.reply('You do not have permission to use this command.');
     return;
   }
   const commandClient = interaction.client as IDiscordClient;
