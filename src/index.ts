@@ -182,7 +182,7 @@ client.on(Events.MessageCreate, async (message) => {
       } else if (content.length <= 2) {
         print('Content is too short.');
         message.react('👎');
-      } else if (content.length >= 1024) {
+      } else if (content.length >= config.openai.maxContentLength) {
         print('Content is too long.');
         message.react('👎');
       } else {

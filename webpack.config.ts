@@ -43,6 +43,7 @@ const config = {
       OPENAI_EMBEDDINGMAXTOKENS: null,
       OPENAI_EMBEDDINGOUTPUT: null,
       OPENAI_DEFAULTCONTEXTLENGTH: null,
+      OPENAI_MAXCONTENTLENGTH: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,
       DISCORD_ROLEID: undefined,
