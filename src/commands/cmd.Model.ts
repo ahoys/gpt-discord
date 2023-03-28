@@ -23,30 +23,10 @@ export default {
     .addStringOption((option) =>
       option
         .setName('model')
-        .setDescription('The model to use.')
-        .setRequired(true)
-        .addChoices(
-          {
-            name: 'gpt-4',
-            value: 'gpt-4',
-          },
-          {
-            name: 'gpt-4-32k',
-            value: 'gpt-4-32k',
-          },
-          {
-            name: 'gpt-3.5-turbo',
-            value: 'gpt-3.5-turbo',
-          },
-          {
-            name: 'code-davinci-002',
-            value: 'code-davinci-002',
-          },
-          {
-            name: 'code-davinci-001',
-            value: 'code-davinci-001',
-          }
+        .setDescription(
+          'The model to use. See https://platform.openai.com/playground for names.'
         )
+        .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
     const guild = interaction.guild?.id;
@@ -60,7 +40,8 @@ export default {
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
       channel.type === ChannelType.GuildText &&
-      typeof model === 'string'
+      typeof model === 'string' &&
+      model.length
     ) {
       const id = getId(guild, channel.id);
       db.channels.findOne({ channel: id }, async (err, doc) => {
