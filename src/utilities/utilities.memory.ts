@@ -59,7 +59,6 @@ export const getContext = (
       content: config.openai.system,
     });
   }
-  print(maxLength, messages);
   return messages;
 };
 
