@@ -22,6 +22,7 @@ import {
   getContext,
   updateContextWithResponse,
 } from './utilities/utilities.memory';
+import { executeChatCompletion } from './apis/api.chatCompletion';
 
 /**
  * Command properties.
@@ -46,6 +47,15 @@ const db: ICmdProps['db'] = {
     inMemoryOnly: false,
   }),
 };
+
+/**
+ * Configuration for upcoming openAI request.
+ */
+export interface IModelConfiguration {
+  model: string;
+  temperature: number;
+  context: number;
+}
 
 /**
  * If paused, the bot will not respond to GPT-messages.
@@ -183,7 +193,7 @@ client.on(Events.MessageCreate, async (message) => {
             message.react('🛑');
           } else {
             // Build configuration for the channel.
-            const configuration = {
+            const configuration: IModelConfiguration = {
               model: doc?.model ?? config.openai.model,
               context: doc?.length ?? config.openai.defaultContextLength,
               temperature:
@@ -192,45 +202,7 @@ client.on(Events.MessageCreate, async (message) => {
                   : config.openai.temperature,
             };
             // Send request to OpenAI.
-            openai
-              .createChatCompletion({
-                model: configuration.model,
-                temperature: configuration.temperature,
-                max_tokens: config.openai.maxTokens,
-                messages: getContext(
-                  id,
-                  message.author.id,
-                  content,
-                  configuration.context
-                ),
-                n: 1,
-                stream: false,
-              })
-              .then((response) => {
-                if (response?.data?.choices) {
-                  const firstChoice = response.data.choices[0];
-                  if (typeof firstChoice.message?.content === 'string') {
-                    message.reply(firstChoice.message.content);
-                    updateContextWithResponse(
-                      id,
-                      message.author.id,
-                      firstChoice.message.content
-                    );
-                  } else {
-                    message.react('👎');
-                  }
-                } else {
-                  message.react('👎');
-                }
-              })
-              .catch((error) => {
-                message.react('🛑');
-                print({
-                  message: error?.message,
-                  configuration,
-                  content,
-                });
-              });
+            executeChatCompletion(openai, message, id, configuration, content);
           }
         });
       }
