@@ -1,6 +1,8 @@
 import config from './config';
 import DataStore from 'nedb';
 import CmdModel from './commands/cmd.Model';
+import CmdContext from './commands/cmd.Context';
+import CmdTemperature from './commands/cmd.Temperature';
 import CmdResume from './commands/cmd.Resume';
 import CmdPause from './commands/cmd.Pause';
 import {
@@ -12,16 +14,34 @@ import {
   GuildMemberRoleManager,
 } from 'discord.js';
 import { print } from 'logscribe';
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai';
+import { Configuration, OpenAIApi } from 'openai';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
+import { getId } from './utilities/utilities.cmd';
+import {
+  getContext,
+  updateContextWithResponse,
+} from './utilities/utilities.memory';
+
+/**
+ * Command properties.
+ */
+export interface ICmdProps {
+  db: {
+    channels: DataStore;
+  };
+  interaction: ChatInputCommandInteraction;
+  openai: OpenAIApi;
+  paused: boolean;
+  handlePause: (v: boolean) => void;
+}
 
 /**
  * Define the database.
  */
-const db = {
-  models: new DataStore({
-    filename: 'models.nedb',
+const db: ICmdProps['db'] = {
+  channels: new DataStore({
+    filename: 'channels.nedb',
     autoload: true,
     inMemoryOnly: false,
   }),
@@ -32,19 +52,6 @@ const db = {
  */
 let paused = false;
 const handlePause = (v: boolean) => (paused = v);
-
-/**
- * Command properties.
- */
-export interface ICmdProps {
-  db: {
-    models: DataStore;
-  };
-  interaction: ChatInputCommandInteraction;
-  openai: OpenAIApi;
-  paused: boolean;
-  handlePause: (v: boolean) => void;
-}
 
 /**
  * Create a new OpenAI client.
@@ -68,6 +75,8 @@ const client = new DiscordJs({
 
 client.commands = new Collection();
 client.commands.set(CmdModel.name, CmdModel);
+client.commands.set(CmdContext.name, CmdContext);
+client.commands.set(CmdTemperature.name, CmdTemperature);
 client.commands.set(CmdResume.name, CmdResume);
 client.commands.set(CmdPause.name, CmdPause);
 
@@ -143,59 +152,60 @@ client.on(Events.MessageCreate, async (message) => {
   try {
     if (client?.user) {
       const channel = message?.channel;
+      if (!message.guild) return;
       if (!message.mentions.has(client.user)) return;
       if (message.author.bot) return;
       if (paused) return;
       if (!channel) return;
       const content = message.content?.replace(/<@\d+>\s/, '');
-      if (
-        typeof content === 'string' &&
-        content.length > 2 &&
-        content.length < 1024
-      ) {
-        db.models.findOne({ channel: channel.id }, (err, modelDoc) => {
-          // Look for a pre-defined model for this channel.
-          const model = modelDoc?.model ?? config.openai.model;
-          // Optimize temperatures in certain models.
-          const temperatures: { [key: string]: number } = {
-            default: 0.8,
-            'code-davinci-002': 0,
-          };
-          const temperature =
-            typeof temperatures[model] === 'number'
-              ? temperatures[model]
-              : temperatures.default;
+      if (typeof content !== 'string') {
+        print('Content is not a string.');
+        message.react('🛑');
+      } else if (content.length <= 2) {
+        print('Content is too short.');
+        message.react('👎');
+      } else if (content.length >= 1024) {
+        print('Content is too long.');
+        message.react('👎');
+      } else {
+        const id = getId(message.guild.id, channel.id);
+        db.channels.findOne({ channel: id }, (err, doc) => {
           if (err) {
             print(err);
             message.react('🛑');
           } else {
-            // Send the request to OpenAI.
-            const messages: ChatCompletionRequestMessage[] = [
-              {
-                role: 'user',
-                content,
-              },
-            ];
-            if (config.openai.system) {
-              messages.unshift({
-                role: 'system',
-                content: config.openai.system,
-              });
-            }
+            // Build configuration for the channel.
+            const configuration = {
+              model: doc?.model ?? config.openai.model,
+              context: doc?.length ?? 0,
+              temperature:
+                doc?.temperature !== undefined ? Number(doc.temperature) : 0.8,
+            };
+            // Send request to OpenAI.
             openai
               .createChatCompletion({
-                model,
-                temperature,
+                model: configuration.model,
+                temperature: configuration.temperature,
                 max_tokens: config.openai.maxTokens,
-                messages,
+                messages: getContext(
+                  id,
+                  message.author.id,
+                  content,
+                  configuration.context
+                ),
                 n: 1,
                 stream: false,
               })
               .then((response) => {
-                if (response.data.choices) {
+                if (response?.data?.choices) {
                   const firstChoice = response.data.choices[0];
                   if (typeof firstChoice.message?.content === 'string') {
-                    return message.reply(firstChoice.message.content);
+                    message.reply(firstChoice.message.content);
+                    updateContextWithResponse(
+                      id,
+                      message.author.id,
+                      firstChoice.message.content
+                    );
                   } else {
                     message.react('👎');
                   }
@@ -204,18 +214,15 @@ client.on(Events.MessageCreate, async (message) => {
                 }
               })
               .catch((error) => {
+                message.react('🛑');
                 print({
-                  model,
-                  temperature,
                   message: error?.message,
+                  configuration,
                   content,
                 });
-                message.reply('Cannot connect to OpenAI API.');
               });
           }
         });
-      } else {
-        message.react('👎');
       }
     }
   } catch (error) {

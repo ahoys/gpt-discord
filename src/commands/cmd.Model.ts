@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { ICmdProps } from '..';
 import { print } from 'logscribe';
+import { getId } from '../utilities/utilities.cmd';
 
 const name = 'model';
 
@@ -29,51 +30,62 @@ export default {
             value: 'gpt-4',
           },
           {
+            name: 'gpt-4-32k',
+            value: 'gpt-4-32k',
+          },
+          {
             name: 'gpt-3.5-turbo',
             value: 'gpt-3.5-turbo',
           },
           {
             name: 'code-davinci-002',
             value: 'code-davinci-002',
+          },
+          {
+            name: 'code-davinci-001',
+            value: 'code-davinci-001',
           }
         )
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
+    const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
     const model = interaction.options.getString('model');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply(`Model for ${channel?.id} failed to updated.`);
+      await interaction.reply(`Model for ${channel?.name} failed to updated.`);
     };
-    if (channel?.id && model) {
-      db.models.findOne({ channel: channel.id }, async (err, doc) => {
+    if (
+      typeof guild === 'string' &&
+      typeof channel?.id === 'string' &&
+      typeof model === 'string'
+    ) {
+      const id = getId(guild, channel.id);
+      db.channels.findOne({ channel: id }, async (err, doc) => {
         if (err) {
           await handleFailure(err);
         } else {
           if (doc) {
-            db.models.update(
-              { channel: channel.id },
-              { model },
+            db.channels.update(
+              { channel: id },
+              { ...doc, model },
               {},
               async (updateErr) => {
                 if (updateErr) {
                   await handleFailure(err);
                 } else {
-                  await interaction.reply(`Model for ${channel.id} updated.`);
+                  await interaction.reply(`Model for ${channel.name} updated.`);
                 }
               }
             );
           } else {
-            db.models.insert(
-              { channel: channel.id, model },
-              async (insertErr) => {
-                if (insertErr) {
-                  await handleFailure(err);
-                } else {
-                  await interaction.reply(`Model for ${channel.id} updated.`);
-                }
+            db.channels.insert({ channel: id, model }, async (insertErr) => {
+              if (insertErr) {
+                await handleFailure(err);
+              } else {
+                await interaction.reply(`Model for ${channel.name} updated.`);
               }
-            );
+            });
           }
         }
       });
