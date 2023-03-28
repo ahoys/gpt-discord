@@ -1,6 +1,5 @@
 {
   "name": "gpt-discord",
-  "version": "1.0.0",
   "author": "Ari Höysniemi",
   "scripts": {
     "start": "nodemon build/gpt.js",
