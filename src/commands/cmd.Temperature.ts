@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { ICmdProps } from '..';
 import { print } from 'logscribe';
 import { getId } from '../utilities/utilities.cmd';
+import { ChannelType } from 'discord.js';
 
 const name = 'temperature';
 
@@ -40,6 +41,7 @@ export default {
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
+      channel.type === ChannelType.GuildText &&
       typeof temperaturePercentage === 'number' &&
       temperaturePercentage >= 0 &&
       temperaturePercentage <= 100

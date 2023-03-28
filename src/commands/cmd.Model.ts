@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { ICmdProps } from '..';
 import { print } from 'logscribe';
 import { getId } from '../utilities/utilities.cmd';
+import { ChannelType } from 'discord.js';
 
 const name = 'model';
 
@@ -58,6 +59,7 @@ export default {
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
+      channel.type === ChannelType.GuildText &&
       typeof model === 'string'
     ) {
       const id = getId(guild, channel.id);

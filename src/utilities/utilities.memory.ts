@@ -1,6 +1,5 @@
 import config from '../config';
 import { ChatCompletionRequestMessage } from 'openai';
-import { print } from 'logscribe';
 
 interface IMemory {
   [key: string]: {
