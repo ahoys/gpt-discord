@@ -67,12 +67,6 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
             role: 'user',
             content,
           });
-          // Mark processing to start.
-          user.setPresence({
-            activities: [
-              { name: message.author.username, type: ActivityType.Listening },
-            ],
-          });
           // Send request to OpenAI.
           executeChatCompletion(
             openai,
@@ -84,18 +78,10 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
                   : config.openai.defaultTemperature,
               messages,
             },
-            (response) => {
-              message.reply(response);
-              user.setPresence({
-                activities: [],
-              });
-            },
+            (response) => message.reply(response),
             (error) => {
               print(error);
               message.react('🤷').catch((error) => print(error));
-              user.setPresence({
-                activities: [],
-              });
             }
           );
         }

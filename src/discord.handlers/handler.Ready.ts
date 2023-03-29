@@ -13,10 +13,6 @@ export default (client: IDiscordClient) =>
     const rest = new REST({ version: '10' }).setToken(
       config.discord.token ?? ''
     );
-    // Clear the presence.
-    client?.user?.setPresence({
-      activities: [],
-    });
     rest
       .put(Routes.applicationCommands(config.discord.appId ?? ''), {
         body: client.commands.map((command) => command.data.toJSON()),
