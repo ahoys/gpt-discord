@@ -1,6 +1,5 @@
 import config from '../config';
 import { OpenAIApi } from 'openai';
-import { IModelConfiguration } from '..';
 import {
   getContext,
   updateContextWithResponse,
@@ -8,6 +7,7 @@ import {
 import { Message } from 'discord.js';
 import { print } from 'logscribe';
 import { splitString } from '../utilities/utilities.discord';
+import { IModelConfiguration } from '../types';
 
 /**
  * Execute a chat completion.

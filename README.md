@@ -18,11 +18,11 @@ Create an .env file at the root of the project folder.
 
 ```
 OPENAI_APIKEY=OpenAI application key.
-OPENAI_MODEL=See OpenAPI reference manual (#model).
-OPENAI_TEMPERATURE=See OpenAPI reference manual (#temperature).
+OPENAI_DEFAULTMODEL=See OpenAPI reference manual (#model).
+OPENAI_DEFAULTTEMPERATURE=See OpenAPI reference manual (#temperature).
 OPENAI_MAXTOKENS=How many tokens can a singular request cost?
 OPENAI_SYSTEM=With a one sentence describe the bot. (optional).
-OPENAI_DEFAULTCONTEXTLENGTH=How long is the memory for the user.
+OPENAI_DEFAULTCONTEXT=How long is the memory for the user.
 OPENAI_MAXCONTENTLENGTH=How long can the user input be?
 DISCORD_APPID=Discord application key.
 DISCORD_TOKEN=Discord Bot token.

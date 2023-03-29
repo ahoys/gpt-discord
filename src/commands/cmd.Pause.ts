@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { ICmdProps } from '..';
+import { ICmdProps } from '../types';
 
 const name = 'pause';
 

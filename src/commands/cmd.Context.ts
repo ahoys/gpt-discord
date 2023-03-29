@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { ICmdProps } from '..';
 import { print } from 'logscribe';
 import { getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
+import { ICmdProps } from '../types';
 
 const name = 'context';
 

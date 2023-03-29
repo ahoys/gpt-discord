@@ -35,14 +35,11 @@ const config = {
   plugins: [
     new webpack.EnvironmentPlugin({
       OPENAI_APIKEY: undefined, // mandatory. If not set, the build will fail.
-      OPENAI_MODEL: null,
-      OPENAI_TEMPERATURE: null,
+      OPENAI_DEFAULTMODEL: null,
+      OPENAI_DEFAULTTEMPERATURE: null,
       OPENAI_MAXTOKENS: null,
       OPENAI_SYSTEM: null,
-      OPENAI_EMBEDDINGINPUT: null,
-      OPENAI_EMBEDDINGMAXTOKENS: null,
-      OPENAI_EMBEDDINGOUTPUT: null,
-      OPENAI_DEFAULTCONTEXTLENGTH: null,
+      OPENAI_DEFAULTCONTEXT: null,
       OPENAI_MAXCONTENTLENGTH: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,

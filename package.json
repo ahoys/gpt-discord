@@ -5,7 +5,6 @@
     "start": "nodemon build/gpt.js",
     "build": "cross-env NODE_ENV=production webpack --progress --config webpack.config.ts",
     "watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.ts",
-    "embed": "cross-env NODE_ENV=development webpack --config webpack.config.embedding.ts",
     "lint": "eslint --fix-dry-run"
   },
   "dependencies": {
