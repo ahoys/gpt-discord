@@ -1,10 +1,10 @@
 import config from '../config';
-import { Events } from 'discord.js';
+import { ActivityType, Events } from 'discord.js';
 import { print } from 'logscribe';
-import { IDatabase, IDiscordClient, IModelConfiguration } from '../types';
-import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
-import { OpenAIApi } from 'openai';
+import { IDatabase, IDiscordClient } from '../types';
+import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { getId } from '../utilities/utilities.cmd';
+import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 
 /**
  * Handle incoming messages.
@@ -13,50 +13,93 @@ import { getId } from '../utilities/utilities.cmd';
 export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
   client.on(Events.MessageCreate, async (message) => {
     try {
-      if (client?.user) {
-        const channel = message?.channel;
-        if (!message.guild) return;
-        if (!message.mentions.has(client.user)) return;
-        if (message.author.bot) return;
-        if (!channel) return;
-        const content = message.content?.replace(/<@\d+>\s/, '');
-        if (typeof content !== 'string') {
-          print('Content is not a string.');
+      const user = client?.user;
+      const channel = message?.channel;
+      if (!user) return;
+      if (!message.guild) return;
+      if (!message.mentions.has(user)) return;
+      if (message.author.bot) return;
+      if (!channel) return;
+      if (db.paused) return;
+      const isReply = message.reference?.messageId !== undefined;
+      // There's a bug in typings of fetch, which is why any is used.
+      const reference = isReply
+        ? await channel.messages.fetch(message.reference?.messageId as any)
+        : undefined;
+      const referenceUser = reference
+        ? await channel.messages.fetch(reference.reference?.messageId as any)
+        : undefined;
+      const referenceContent = reference?.content;
+      const referenceUserContent = referenceUser?.content.replace(
+        /<@\d+>\s/,
+        ''
+      );
+      const content = message.content?.replace(/<@\d+>\s/, '');
+      if (typeof content !== 'string' || !content.trim()) return;
+      if (content.length > config.discord.maxContentLength) return;
+      const id = getId(message.guild.id, channel.id);
+      db.channels.findOne({ channel: id }, (err, doc) => {
+        if (err) {
+          print(err);
           message.react('🛑').catch((error) => print(error));
-        } else if (content.length <= 2) {
-          print('Content is too short.');
-          message.react('👎').catch((error) => print(error));
-        } else if (content.length >= config.openai.maxContentLength) {
-          print('Content is too long.');
-          message.react('👎').catch((error) => print(error));
         } else {
-          const id = getId(message.guild.id, channel.id);
-          db.channels.findOne({ channel: id }, (err, doc) => {
-            if (err) {
-              print(err);
-              message.react('🛑').catch((error) => print(error));
-            } else {
-              // Build configuration for the channel.
-              const configuration: IModelConfiguration = {
-                model: doc?.model ?? config.openai.defaultModel,
-                context: doc?.length ?? config.openai.defaultContext,
-                temperature:
-                  doc?.temperature !== undefined
-                    ? Number(doc.temperature)
-                    : config.openai.defaultTemperature,
-              };
-              // Send request to OpenAI.
-              executeChatCompletion(
-                openai,
-                message,
-                id,
-                configuration,
-                content
-              );
-            }
+          // Generate a context.
+          const messages: CreateChatCompletionRequest['messages'] = [];
+          if (config.openai.system) {
+            messages.push({
+              role: 'system',
+              content: config.openai.system,
+            });
+          }
+          if (referenceUserContent?.trim()) {
+            messages.push({
+              role: 'user',
+              content: referenceUserContent,
+            });
+          }
+          if (referenceContent?.trim()) {
+            messages.push({
+              role: 'assistant',
+              content: referenceContent,
+            });
+          }
+          messages.push({
+            role: 'user',
+            content,
           });
+          // Mark processing to start.
+          user.setPresence({
+            activities: [
+              { name: message.author.username, type: ActivityType.Listening },
+            ],
+          });
+          // Send request to OpenAI.
+          executeChatCompletion(
+            openai,
+            {
+              model: doc?.model ?? config.openai.defaultModel,
+              temperature:
+                doc?.temperature !== undefined
+                  ? Number(doc.temperature)
+                  : config.openai.defaultTemperature,
+              messages,
+            },
+            (response) => {
+              message.reply(response);
+              user.setPresence({
+                activities: [],
+              });
+            },
+            (error) => {
+              print(error);
+              message.react('🤷').catch((error) => print(error));
+              user.setPresence({
+                activities: [],
+              });
+            }
+          );
         }
-      }
+      });
     } catch (error) {
       print(error);
     }

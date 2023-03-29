@@ -39,11 +39,10 @@ const config = {
       OPENAI_DEFAULTTEMPERATURE: null,
       OPENAI_MAXTOKENS: null,
       OPENAI_SYSTEM: null,
-      OPENAI_DEFAULTCONTEXT: null,
-      OPENAI_MAXCONTENTLENGTH: null,
       DISCORD_APPID: undefined,
       DISCORD_TOKEN: undefined,
       DISCORD_ROLEID: undefined,
+      DISCORD_MAXCONTENTLENGTH: null,
     }),
   ],
   optimization: {
