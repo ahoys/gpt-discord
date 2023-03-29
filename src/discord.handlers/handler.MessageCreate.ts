@@ -1,5 +1,5 @@
 import config from '../config';
-import { ActivityType, Events } from 'discord.js';
+import { Events } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import { CreateChatCompletionRequest, OpenAIApi } from 'openai';

@@ -48,9 +48,10 @@ export default {
       temperaturePercentage <= 100
     ) {
       const id = getId(guild, channel.id);
-      const temperature = !temperaturePercentage
-        ? 0
-        : (temperaturePercentage / 100).toFixed(2);
+      const temperature =
+        temperaturePercentage <= 0
+          ? 0
+          : (temperaturePercentage / 100).toFixed(2);
       db.channels.findOne({ channel: id }, async (err, doc) => {
         if (err) {
           await handleFailure(err);
@@ -71,16 +72,19 @@ export default {
             }
           );
         } else {
-          db.channels.insert({ channel: id, length }, async (insertErr) => {
-            if (insertErr) {
-              await handleFailure(err);
-            } else {
-              await interaction.reply({
-                content: `Temperature for ${channel.name} saved to ${temperature}.`,
-                ephemeral: true,
-              });
+          db.channels.insert(
+            { channel: id, temperature },
+            async (insertErr) => {
+              if (insertErr) {
+                await handleFailure(err);
+              } else {
+                await interaction.reply({
+                  content: `Temperature for ${channel.name} saved to ${temperature}.`,
+                  ephemeral: true,
+                });
+              }
             }
-          });
+          );
         }
       });
     }

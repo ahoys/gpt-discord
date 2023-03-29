@@ -1,7 +1,7 @@
 import config from '../config';
 import { Events, GuildMemberRoleManager } from 'discord.js';
 import { print } from 'logscribe';
-import { ICmdProps, IDatabase, IDiscordClient } from '../types';
+import { IDatabase, IDiscordClient } from '../types';
 import { OpenAIApi } from 'openai';
 
 /**
@@ -33,29 +33,13 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       print(`No command matching ${interaction.commandName} was found.`);
       return;
     }
-    try {
-      const properties: ICmdProps = {
-        db,
-        interaction,
-        openai,
-        paused: db.paused,
-        handlePause: (v: boolean) => {
-          db.paused = v;
-        },
-      };
-      await command.execute(properties);
-    } catch (error) {
-      print(`Error executing command ${interaction.commandName}: ${error}`);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: 'There was an error while executing this command!',
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: 'There was an error while executing this command!',
-          ephemeral: true,
-        });
-      }
-    }
+    await command.execute({
+      db,
+      interaction,
+      openai,
+      paused: db.paused,
+      handlePause: (v: boolean) => {
+        db.paused = v;
+      },
+    });
   });

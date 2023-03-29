@@ -1,7 +1,6 @@
 import config from './config';
 import DataStore from 'nedb';
 import CmdModel from './discord.commands/cmd.Model';
-import CmdContext from './discord.commands/cmd.Context';
 import CmdTemperature from './discord.commands/cmd.Temperature';
 import CmdResume from './discord.commands/cmd.Resume';
 import CmdPause from './discord.commands/cmd.Pause';
@@ -42,7 +41,7 @@ const discord = new DiscordJs({
 
 // Enable commands.
 discord.commands = new Collection();
-for (const Cmd of [CmdModel, CmdContext, CmdTemperature, CmdResume, CmdPause]) {
+for (const Cmd of [CmdModel, CmdTemperature, CmdResume, CmdPause]) {
   discord.commands.set(Cmd.name, Cmd);
 }
 
