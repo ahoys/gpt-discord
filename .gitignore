@@ -4,3 +4,4 @@ node_modules
 *.nedb
 *.db
 *.json
+*.log
