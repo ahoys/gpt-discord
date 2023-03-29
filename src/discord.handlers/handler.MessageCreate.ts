@@ -2,7 +2,7 @@ import config from '../config';
 import { Events } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IModelConfiguration } from '../types';
-import { executeChatCompletion } from '../apis/api.chatCompletion';
+import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { OpenAIApi } from 'openai';
 import { getId } from '../utilities/utilities.cmd';
 
