@@ -7,7 +7,9 @@ import {
 import { Message } from 'discord.js';
 import { print } from 'logscribe';
 import { splitString } from '../utilities/utilities.discord';
-import { IModelConfiguration } from '../types';
+import { IMemory, IModelConfiguration } from '../types';
+
+let memory: IMemory = {};
 
 /**
  * Execute a chat completion.
@@ -28,7 +30,8 @@ export const executeChatCompletion = async (
         id,
         message.author.id,
         content,
-        configuration.context
+        configuration.context,
+        memory
       ),
       n: 1,
       stream: false,
@@ -50,7 +53,8 @@ export const executeChatCompletion = async (
           updateContextWithResponse(
             id,
             message.author.id,
-            firstChoice.message.content
+            firstChoice.message.content,
+            memory
           );
         } else {
           message.react('👎').catch((error) => print(error));

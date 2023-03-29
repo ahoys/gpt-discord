@@ -1,15 +1,6 @@
 import config from '../config';
 import { ChatCompletionRequestMessage } from 'openai';
-
-interface IMemory {
-  [key: string]: {
-    [key: string]: ChatCompletionRequestMessage[];
-  };
-}
-/**
- * Memory for user messages. Related to context.
- */
-const memory: IMemory = {};
+import { IMemory } from '../types';
 
 /**
  * Get the context for a author.
@@ -17,13 +8,15 @@ const memory: IMemory = {};
  * @param author Id of author.
  * @param content Content of message.
  * @param maxLength Max length of context.
+ * @param memory Memory object.
  * @returns Context for a author.
  */
 export const getContext = (
   id: string,
   author: string,
   content: string,
-  maxLength: number
+  maxLength: number,
+  memory: IMemory
 ): ChatCompletionRequestMessage[] => {
   let messages: ChatCompletionRequestMessage[] = [];
   if (author && content) {
@@ -66,11 +59,13 @@ export const getContext = (
  * @param id Guild-Channel ID.
  * @param author Id of author.
  * @param content Content of response.
+ * @param memory Memory object.
  */
 export const updateContextWithResponse = (
   id: string,
   author: string,
-  content: string
+  content: string,
+  memory: IMemory
 ) => {
   if (id && author && content) {
     const existing = memory[id] ? [...(memory[id][author] || [])] : [];

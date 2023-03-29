@@ -1,11 +1,12 @@
 /**
- * Splits a string into chunks of 2000 characters
- * @param {string} str String to split
- * @returns {string[]} Array of strings
+ * Splits a string into chunks of 2000 characters.
+ * @param {string} str String to split.
+ * @param {number} max Maximum length of each chunk.
+ * @returns {string[]} Array of strings.
  */
-export const splitString = (str: string): string[] => {
+export const splitString = (str: string, max = 2000): string[] => {
   const result: string[] = [];
-  const chunkSize = 2000;
+  const chunkSize = max;
   for (let i = 0; i < str.length; i += chunkSize) {
     result.push(str.substring(i, i + chunkSize));
   }
