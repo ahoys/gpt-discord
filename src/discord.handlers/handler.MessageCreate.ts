@@ -39,7 +39,9 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
           if (config.openai.system?.trim()) {
             messages.push({
               role: 'system',
-              content: config.openai.system,
+              content:
+                config.openai.system ??
+                `You are in Discord with username ${user.username}.`,
             });
           }
           if (referenceUser) {
