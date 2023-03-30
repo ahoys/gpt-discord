@@ -5,7 +5,10 @@ import { IDatabase, IDiscordClient } from '../types';
 import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { getId } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
-import { getMessageForMessages } from '../utilities/utilities.discord';
+import {
+  getFirstReference,
+  getMessageForMessages,
+} from '../utilities/utilities.discord';
 
 /**
  * Handle incoming messages.
@@ -25,8 +28,8 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const reference = isReply
         ? await channel.messages.fetch(message.reference?.messageId as any)
         : undefined;
-      const referenceUser = reference
-        ? await channel.messages.fetch(reference.reference?.messageId as any)
+      const firstReference = reference
+        ? await getFirstReference(reference)
         : undefined;
       const dbId = getId(guild?.id, channel.id);
       db.channels.findOne({ channel: dbId }, (err, doc) => {
@@ -44,13 +47,19 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
                 `You are in Discord with username ${user.username}.`,
             });
           }
-          if (referenceUser) {
-            messages.push(getMessageForMessages(client, referenceUser));
+          if (firstReference) {
+            const msg = getMessageForMessages(client, firstReference);
+            if (msg) messages.push(msg);
           }
           if (reference) {
-            messages.push(getMessageForMessages(client, reference));
+            const msg = getMessageForMessages(client, reference);
+            if (msg) messages.push(msg);
           }
-          messages.push(getMessageForMessages(client, message));
+          if (message?.author) {
+            const msg = getMessageForMessages(client, message);
+            if (msg) messages.push(msg);
+          }
+          if (!messages.length) return;
           // Send request to OpenAI.
           executeChatCompletion(
             openai,
