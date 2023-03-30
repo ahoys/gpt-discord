@@ -1,10 +1,11 @@
 import config from '../config';
-import { Events } from 'discord.js';
+import { ClientUser, Events, Message } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { getId } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
+import { getMessageForMessages } from '../utilities/utilities.discord';
 
 /**
  * Handle incoming messages.
@@ -13,14 +14,12 @@ import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
   client.on(Events.MessageCreate, async (message) => {
     try {
-      const user = client?.user;
-      const channel = message?.channel;
-      if (!user) return;
-      if (!message.guild) return;
+      const { user } = client;
+      const { guild, channel } = message;
+      if (!user || !guild || !channel) return;
+      if (!message.content?.trim().length) return;
       if (!message.mentions.has(user)) return;
       if (message.author.bot) return;
-      if (!channel) return;
-      if (db.paused) return;
       const isReply = message.reference?.messageId !== undefined;
       // There's a bug in typings of fetch, which is why any is used.
       const reference = isReply
@@ -29,44 +28,27 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const referenceUser = reference
         ? await channel.messages.fetch(reference.reference?.messageId as any)
         : undefined;
-      const referenceContent = reference?.content;
-      const referenceUserContent = referenceUser?.content.replace(
-        /<@\d+>\s/,
-        ''
-      );
-      const content = message.content?.replace(/<@\d+>\s/, '');
-      if (typeof content !== 'string' || !content.trim()) return;
-      if (content.length > config.discord.maxContentLength) return;
-      const id = getId(message.guild.id, channel.id);
-      db.channels.findOne({ channel: id }, (err, doc) => {
+      const dbId = getId(guild?.id, channel.id);
+      db.channels.findOne({ channel: dbId }, (err, doc) => {
         if (err) {
           print(err);
           message.react('🛑').catch((error) => print(error));
         } else {
           // Generate a context.
           const messages: CreateChatCompletionRequest['messages'] = [];
-          if (config.openai.system) {
+          if (config.openai.system?.trim()) {
             messages.push({
               role: 'system',
               content: config.openai.system,
             });
           }
-          if (referenceUserContent?.trim()) {
-            messages.push({
-              role: 'user',
-              content: referenceUserContent,
-            });
+          if (referenceUser) {
+            messages.push(getMessageForMessages(client, referenceUser));
           }
-          if (referenceContent?.trim()) {
-            messages.push({
-              role: 'assistant',
-              content: referenceContent,
-            });
+          if (reference) {
+            messages.push(getMessageForMessages(client, reference));
           }
-          messages.push({
-            role: 'user',
-            content,
-          });
+          messages.push(getMessageForMessages(client, message));
           // Send request to OpenAI.
           executeChatCompletion(
             openai,
