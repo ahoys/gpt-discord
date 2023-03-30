@@ -51,19 +51,19 @@ describe('getMessageForMessages', () => {
   it('should set the role to "assistant" if the message author is the client', () => {
     message.author.id = (client.user as ClientUser).id;
     const result = getMessageForMessages(client, message);
-    expect(result.role).toEqual('assistant');
+    expect(result?.role).toEqual('assistant');
   });
 
   it('should set the role to "user" if the message author is not the client', () => {
     message.author.id = '456';
     const result = getMessageForMessages(client, message);
-    expect(result.role).toEqual('user');
+    expect(result?.role).toEqual('user');
   });
 
   it('should truncate the content if it is longer than the max length', () => {
     const longContent = 'a'.repeat(3000);
     (message.cleanContent as string) = longContent;
     const result = getMessageForMessages(client, message);
-    expect(result.content.length).toEqual(config.discord.maxContentLength);
+    expect(result?.content.length).toEqual(config.discord.maxContentLength);
   });
 });
