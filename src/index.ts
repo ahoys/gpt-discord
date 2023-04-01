@@ -4,6 +4,8 @@ import CmdModel from './discord.commands/cmd.Model';
 import CmdTemperature from './discord.commands/cmd.Temperature';
 import CmdResume from './discord.commands/cmd.Resume';
 import CmdPause from './discord.commands/cmd.Pause';
+import CmdTraining from './discord.commands/cmd.Training';
+import CmdQuery from './discord.commands/cmd.Query';
 import Ready from './discord.handlers/handler.Ready';
 import MessageCreate from './discord.handlers/handler.MessageCreate';
 import InteractionCreate from './discord.handlers/handler.InteractionCreate';
@@ -41,7 +43,14 @@ const discord = new DiscordJs({
 
 // Enable commands.
 discord.commands = new Collection();
-for (const Cmd of [CmdModel, CmdTemperature, CmdResume, CmdPause]) {
+for (const Cmd of [
+  CmdModel,
+  CmdTemperature,
+  CmdResume,
+  CmdPause,
+  CmdTraining,
+  CmdQuery,
+]) {
   discord.commands.set(Cmd.name, Cmd);
 }
 
