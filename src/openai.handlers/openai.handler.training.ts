@@ -5,8 +5,18 @@ import { executeEmbedding } from '../openai.apis/api.embedding';
 import { OpenAIApi } from 'openai';
 
 export const openaiTrainingHandler = async (openai: OpenAIApi) => {
-  let str = material.join(' ');
-  const embedding = await executeEmbedding(openai, str);
-  const json = JSON.stringify(embedding);
+  const result: number[][] = [];
+  for (let i = 0; i < material.length; i++) {
+    const str = material[i];
+    await executeEmbedding(openai, str).then((res) => {
+      if (Array.isArray(res)) {
+        console.log('Success ', i);
+        result.push(res);
+      } else {
+        result.push([]);
+      }
+    });
+  }
+  const json = JSON.stringify(result);
   fs.writeFileSync(path.join(__dirname, 'embedding.json'), json);
 };

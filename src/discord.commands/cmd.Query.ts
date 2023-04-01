@@ -17,16 +17,17 @@ export default {
         .setRequired(true)
     ),
   execute: async ({ interaction, openai }: ICmdProps) => {
-    interaction.channel?.send('Querying...');
     const query = interaction.options.getString('query');
     if (!query) return;
-    await openaiQueryHandler(openai, query)
-      .then(() => {
-        interaction.reply('Query has been executed.');
-      })
-      .catch((err) => {
+    await openaiQueryHandler(
+      openai,
+      query,
+      async (content) =>
+        await interaction.reply(content).catch((err) => print(err)),
+      async (err) => {
         print(err);
-        interaction.reply('Query has failed.');
-      });
+        await interaction.reply('🤷').catch((err) => print(err));
+      }
+    );
   },
 };

@@ -11,14 +11,17 @@ export default {
     .setName(name)
     .setDescription('Will execute training.'),
   execute: async ({ interaction, openai }: ICmdProps) => {
-    interaction.channel?.send('Training...');
     await openaiTrainingHandler(openai)
-      .then(() => {
-        interaction.reply('Training has been executed.');
+      .then(async () => {
+        await interaction
+          .reply('Training has been executed.')
+          .catch((err) => print(err));
       })
-      .catch((err) => {
+      .catch(async (err) => {
         print(err);
-        interaction.reply('Training has failed.');
+        await interaction
+          .reply('Training has failed.')
+          .catch((err) => print(err));
       });
   },
 };
