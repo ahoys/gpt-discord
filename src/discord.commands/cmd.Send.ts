@@ -10,7 +10,7 @@ import config from '../config';
 const name = 'send';
 
 /**
- * Will change the model used by GPT for the channel.
+ * Will send a message to a channel.
  */
 export default {
   name,
