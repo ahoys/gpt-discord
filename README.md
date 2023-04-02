@@ -34,7 +34,9 @@ OPENAI_SYSTEM=With a one sentence describe the bot. (optional).
 DISCORD_APPID=Discord application key.
 DISCORD_TOKEN=Discord Bot token.
 DISCORD_ROLEID=Discord role with permissions to commands.
-DISCORD_MAXCONTENTLENGTH=How long can the user input be? This likely affects how many tokens will the response be.
+DISCORD_MAXCONTENTLENGTH=How long can the user input be.
+DISCORD_IGNORECOMMANDS=List of command names that should not be available.
+DISCORD_CUSTOMCOMMANDSDIR=Your unofficial custom commands folder.
 ```
 
 [You can read default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)

@@ -1,20 +1,15 @@
-import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 import config from './config';
-// import CmdModel from './discord.commands/cmd.Model';
-// import CmdTemperature from './discord.commands/cmd.Temperature';
-// import CmdSystem from './discord.commands/cmd.System';
-// import CmdResume from './discord.commands/cmd.Resume';
-// import CmdPause from './discord.commands/cmd.Pause';
-// import CmdSend from './discord.commands/cmd.Send';
-import Ready from './discord.handlers/handler.Ready';
-import MessageCreate from './discord.handlers/handler.MessageCreate';
-import InteractionCreate from './discord.handlers/handler.InteractionCreate';
+import DiscordReady from './discord.handlers/handler.Ready';
+import DiscordMessageCreate from './discord.handlers/handler.MessageCreate';
+import DiscordInteractionCreate from './discord.handlers/handler.InteractionCreate';
 import jsonscribe from 'jsonscribe';
 import { Client as DiscordJs, GatewayIntentBits, Collection } from 'discord.js';
 import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from './types';
+import { getDynamicCommands } from './utilities/utilities.cmd';
 
 print(config);
 
@@ -47,32 +42,27 @@ const discord = new DiscordJs({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 }) as IDiscordClient;
 
-// Read all commands from the commands-folder.
-discord.commands = new Collection();
-const filenames = fs.readdirSync(path.join(__dirname, 'discord.commands'));
-for (const filename of filenames) {
-  const file = require(path.join(__dirname, 'discord.commands', filename));
-  if (
-    'name' in file &&
-    'data' in file &&
-    'execute' in file &&
-    typeof file.name === 'string' &&
-    typeof file.data === 'object' &&
-    typeof file.execute === 'function'
-  ) {
-    print(`Loaded /${file.name}`);
-    discord.commands.set(file.name, {
-      name: file.name,
-      data: file.data,
-      execute: file.execute,
-    });
-  }
+// Read all official commands from the commands-folder.
+discord.commands = getDynamicCommands(
+  new Collection(),
+  path.join(__dirname, 'discord.commands')
+);
+
+if (
+  config.discord.customCommandsDir &&
+  fs.existsSync(config.discord.customCommandsDir)
+) {
+  // Read all unofficial commands from the custom commands-folder.
+  discord.commands = getDynamicCommands(
+    discord.commands,
+    path.join(__dirname, '..', config.discord.customCommandsDir)
+  );
 }
 
 // Register handlers.
-Ready(discord);
-InteractionCreate(discord, openai, db);
-MessageCreate(discord, openai, db);
+DiscordReady(discord);
+DiscordInteractionCreate(discord, openai, db);
+DiscordMessageCreate(discord, openai, db);
 
 // Login to discord. This will then trigger the Ready-handler.
 discord.login(config.discord.token);
