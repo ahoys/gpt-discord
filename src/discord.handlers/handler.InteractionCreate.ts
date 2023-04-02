@@ -37,6 +37,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       db,
       interaction,
       openai,
+      discord: client,
       paused: db.paused,
       handlePause: (v: boolean) => {
         db.paused = v;

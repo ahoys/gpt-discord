@@ -15,6 +15,7 @@ export interface IDatabase {
 export interface ICmdProps {
   db: IDatabase;
   interaction: ChatInputCommandInteraction;
+  discord: IDiscordClient;
   openai: OpenAIApi;
   paused: boolean;
   handlePause: (v: boolean) => void;
