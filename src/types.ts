@@ -1,4 +1,4 @@
-import DataStore from 'nedb';
+import { JSONScribeFile } from 'jsonscribe';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Client as DiscordJs, Collection } from 'discord.js';
 import { OpenAIApi } from 'openai';
@@ -9,7 +9,9 @@ export interface IDiscordClient extends DiscordJs {
 
 export interface IDatabase {
   paused: boolean;
-  channels: DataStore;
+  models: JSONScribeFile<string>;
+  temperatures: JSONScribeFile<number>;
+  systems: JSONScribeFile<string>;
 }
 
 export interface ICmdProps {

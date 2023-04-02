@@ -33,12 +33,6 @@ export default {
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
     const model = interaction.options.getString('model');
-    const handleFailure = async (err: Error | null) => {
-      print(err);
-      await interaction.editReply({
-        content: `Model for ${channel?.name} failed to updated.`,
-      });
-    };
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
@@ -47,38 +41,20 @@ export default {
       model.length
     ) {
       const id = getId(guild, channel.id);
-      db.channels.findOne({ channel: id }, async (err, doc) => {
-        if (err) {
-          await handleFailure(err);
-        } else {
-          if (doc) {
-            db.channels.update(
-              { channel: id },
-              { ...doc, model },
-              {},
-              async (updateErr) => {
-                if (updateErr) {
-                  await handleFailure(err);
-                } else {
-                  await interaction.editReply({
-                    content: `Model for ${channel.name} updated to ${model}.`,
-                  });
-                }
-              }
-            );
-          } else {
-            db.channels.insert({ channel: id, model }, async (insertErr) => {
-              if (insertErr) {
-                await handleFailure(err);
-              } else {
-                await interaction.editReply({
-                  content: `Model for ${channel.name} saved to ${model}.`,
-                });
-              }
-            });
-          }
-        }
-      });
+      await db.models
+        .setKey(id, model)
+        .then(
+          async () =>
+            await interaction.editReply(
+              `Model for ${channel.name} updated to ${model}.`
+            )
+        )
+        .catch(async (e) => {
+          print(e);
+          await interaction.editReply(
+            `Model for ${channel.name} failed to updated to ${model}.`
+          );
+        });
     }
   },
 };

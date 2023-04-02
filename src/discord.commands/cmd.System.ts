@@ -4,60 +4,53 @@ import { getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 
-const name = 'temperature';
+const name = 'system';
 
 /**
- * Command to adjust temperature for a channel.
+ * Will change the system used by GPT for the channel.
  */
 export default {
   name,
   data: new SlashCommandBuilder()
     .setName(name)
-    .setDescription('Adjust temperature for a channel.')
+    .setDescription('Will change the system used by GPT for the channel.')
     .addChannelOption((option) =>
       option
         .setName('channel')
-        .setDescription('The channel to change the setting for.')
+        .setDescription('The channel to change the system for.')
         .setRequired(true)
     )
-    .addIntegerOption((option) =>
+    .addStringOption((option) =>
       option
-        .setName('temperature')
-        .setMinValue(0)
-        .setMaxValue(100)
-        .setDescription('0: Very exact, 100: Very random.')
+        .setName('system')
+        .setDescription('The system to use.')
         .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
     await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
-    const temperaturePercentage = interaction.options.getInteger('temperature');
+    const system = interaction.options.getString('system');
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
       channel.type === ChannelType.GuildText &&
-      typeof temperaturePercentage === 'number' &&
-      temperaturePercentage >= 0 &&
-      temperaturePercentage <= 100
+      typeof system === 'string' &&
+      system.length
     ) {
       const id = getId(guild, channel.id);
-      const temperature =
-        temperaturePercentage <= 0
-          ? 0
-          : (temperaturePercentage / 100).toFixed(2);
-      await db.temperatures
-        .setKey(id, Number(temperature))
+      await db.systems
+        .setKey(id, system)
         .then(
           async () =>
             await interaction.editReply(
-              `Model for ${channel.name} updated to ${temperature}.`
+              `System for ${channel.name} updated to ${system}.`
             )
         )
         .catch(async (e) => {
           print(e);
           await interaction.editReply(
-            `Model for ${channel.name} failed to updated to ${temperature}.`
+            `System for ${channel.name} failed to updated to ${system}.`
           );
         });
     }

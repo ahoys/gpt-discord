@@ -1,3 +1,4 @@
+import config from '../config';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { print } from 'logscribe';
 import { getId } from '../utilities/utilities.cmd';
@@ -5,7 +6,6 @@ import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
-import config from '../config';
 
 const name = 'send';
 
@@ -43,54 +43,48 @@ export default {
       prompt.trim().length
     ) {
       const dbId = getId(guild, channel.id);
-      db.channels.findOne({ channel: dbId }, async (err, doc) => {
-        if (err) {
-          interaction.editReply({ content: 'Sending failed.' });
-          return;
-        }
-        const messages: CreateChatCompletionRequest['messages'] = [];
-        if (config.openai.system?.trim()) {
-          messages.push({
-            role: 'system',
-            content:
-              config.openai.system ??
-              `You are in Discord with username ${discord.user?.username}.`,
-          });
-        }
+      const messages: CreateChatCompletionRequest['messages'] = [];
+      if (config.openai.system?.trim()) {
         messages.push({
-          role: 'user',
-          content: prompt,
+          role: 'system',
+          content:
+            (await db.systems.getKey(dbId)) ??
+            config.openai.system ??
+            `You are in Discord with username ${discord.user?.username}.`,
         });
-        executeChatCompletion(
-          openai,
-          {
-            model: doc?.model ?? config.openai.defaultModel,
-            temperature:
-              doc?.temperature !== undefined
-                ? Number(doc.temperature)
-                : config.openai.defaultTemperature,
-            messages,
-          },
-          async (response) =>
-            await channel
-              .send(response)
-              .catch((err) => print(err))
-              .finally(
-                async () =>
-                  await interaction.editReply({
-                    content: 'Message sent.',
-                  })
-              ),
-          async (err) => {
-            print(err);
-            await interaction
-              .editReply({
-                content: 'Sending failed.',
-              })
-              .catch((err) => print(err));
-          }
-        );
+      }
+      messages.push({
+        role: 'user',
+        content: prompt,
       });
+      executeChatCompletion(
+        openai,
+        {
+          model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+          temperature:
+            (await db.temperatures.getKey(dbId)) ??
+            config.openai.defaultTemperature,
+          messages,
+        },
+        async (response) =>
+          await channel
+            .send(response)
+            .catch((err) => print(err))
+            .finally(
+              async () =>
+                await interaction.editReply({
+                  content: 'Message sent.',
+                })
+            ),
+        async (err) => {
+          print(err);
+          await interaction
+            .editReply({
+              content: 'Sending failed.',
+            })
+            .catch((err) => print(err));
+        }
+      );
     }
   },
 };

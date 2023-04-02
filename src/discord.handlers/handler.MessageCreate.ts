@@ -32,53 +32,46 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         ? await getFirstReference(reference)
         : undefined;
       const dbId = getId(guild?.id, channel.id);
-      db.channels.findOne({ channel: dbId }, (err, doc) => {
-        if (err) {
-          print(err);
-          message.react('🛑').catch((error) => print(error));
-        } else {
-          // Generate a context.
-          const messages: CreateChatCompletionRequest['messages'] = [];
-          if (config.openai.system?.trim()) {
-            messages.push({
-              role: 'system',
-              content:
-                config.openai.system ??
-                `You are in Discord with username ${user.username}.`,
-            });
-          }
-          if (firstReference) {
-            const msg = getMessageForMessages(client, firstReference);
-            if (msg) messages.push(msg);
-          }
-          if (reference) {
-            const msg = getMessageForMessages(client, reference);
-            if (msg) messages.push(msg);
-          }
-          if (message?.author) {
-            const msg = getMessageForMessages(client, message);
-            if (msg) messages.push(msg);
-          }
-          if (!messages.length) return;
-          // Send request to OpenAI.
-          executeChatCompletion(
-            openai,
-            {
-              model: doc?.model ?? config.openai.defaultModel,
-              temperature:
-                doc?.temperature !== undefined
-                  ? Number(doc.temperature)
-                  : config.openai.defaultTemperature,
-              messages,
-            },
-            (response) => message.reply(response),
-            (error) => {
-              print(error);
-              message.react('🤷').catch((error) => print(error));
-            }
-          );
+      // Generate a context.
+      const messages: CreateChatCompletionRequest['messages'] = [];
+      if (config.openai.system?.trim()) {
+        messages.push({
+          role: 'system',
+          content:
+            (await db.systems.getKey(dbId)) ??
+            config.openai.system ??
+            `You are in Discord with username ${user.username}.`,
+        });
+      }
+      if (firstReference) {
+        const msg = getMessageForMessages(client, firstReference);
+        if (msg) messages.push(msg);
+      }
+      if (reference) {
+        const msg = getMessageForMessages(client, reference);
+        if (msg) messages.push(msg);
+      }
+      if (message?.author) {
+        const msg = getMessageForMessages(client, message);
+        if (msg) messages.push(msg);
+      }
+      if (!messages.length) return;
+      // Send request to OpenAI.
+      executeChatCompletion(
+        openai,
+        {
+          model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+          temperature:
+            (await db.temperatures.getKey(dbId)) ??
+            config.openai.defaultTemperature,
+          messages,
+        },
+        (response) => message.reply(response),
+        (error) => {
+          print(error);
+          message.react('🤷').catch((error) => print(error));
         }
-      });
+      );
     } catch (error) {
       print(error);
     }

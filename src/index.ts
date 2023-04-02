@@ -1,13 +1,15 @@
+import path from 'path';
 import config from './config';
-import DataStore from 'nedb';
 import CmdModel from './discord.commands/cmd.Model';
 import CmdTemperature from './discord.commands/cmd.Temperature';
+import CmdSystem from './discord.commands/cmd.System';
 import CmdResume from './discord.commands/cmd.Resume';
 import CmdPause from './discord.commands/cmd.Pause';
 import CmdSend from './discord.commands/cmd.Send';
 import Ready from './discord.handlers/handler.Ready';
 import MessageCreate from './discord.handlers/handler.MessageCreate';
 import InteractionCreate from './discord.handlers/handler.InteractionCreate';
+import jsonscribe from 'jsonscribe';
 import { Client as DiscordJs, GatewayIntentBits, Collection } from 'discord.js';
 import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
@@ -19,11 +21,11 @@ print(config);
 // a key-value store.
 const db: IDatabase = {
   paused: false,
-  channels: new DataStore({
-    filename: 'channels.nedb',
-    autoload: true,
-    inMemoryOnly: false,
+  models: jsonscribe<string>({ path: path.join(__dirname, 'models.json') }),
+  temperatures: jsonscribe<number>({
+    path: path.join(__dirname, 'temperatures.json'),
   }),
+  systems: jsonscribe<string>({ path: path.join(__dirname, 'systems.json') }),
 };
 
 // The OpenAI API client.
@@ -42,7 +44,14 @@ const discord = new DiscordJs({
 
 // Enable commands.
 discord.commands = new Collection();
-for (const Cmd of [CmdModel, CmdTemperature, CmdResume, CmdPause, CmdSend]) {
+for (const Cmd of [
+  CmdModel,
+  CmdTemperature,
+  CmdSystem,
+  CmdResume,
+  CmdPause,
+  CmdSend,
+]) {
   discord.commands.set(Cmd.name, Cmd);
 }
 
