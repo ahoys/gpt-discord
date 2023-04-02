@@ -1,11 +1,12 @@
+import fs from 'fs';
 import path from 'path';
 import config from './config';
-import CmdModel from './discord.commands/cmd.Model';
-import CmdTemperature from './discord.commands/cmd.Temperature';
-import CmdSystem from './discord.commands/cmd.System';
-import CmdResume from './discord.commands/cmd.Resume';
-import CmdPause from './discord.commands/cmd.Pause';
-import CmdSend from './discord.commands/cmd.Send';
+// import CmdModel from './discord.commands/cmd.Model';
+// import CmdTemperature from './discord.commands/cmd.Temperature';
+// import CmdSystem from './discord.commands/cmd.System';
+// import CmdResume from './discord.commands/cmd.Resume';
+// import CmdPause from './discord.commands/cmd.Pause';
+// import CmdSend from './discord.commands/cmd.Send';
 import Ready from './discord.handlers/handler.Ready';
 import MessageCreate from './discord.handlers/handler.MessageCreate';
 import InteractionCreate from './discord.handlers/handler.InteractionCreate';
@@ -46,17 +47,26 @@ const discord = new DiscordJs({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 }) as IDiscordClient;
 
-// Enable commands.
+// Read all commands from the commands-folder.
 discord.commands = new Collection();
-for (const Cmd of [
-  CmdModel,
-  CmdTemperature,
-  CmdSystem,
-  CmdResume,
-  CmdPause,
-  CmdSend,
-]) {
-  discord.commands.set(Cmd.name, Cmd);
+const filenames = fs.readdirSync(path.join(__dirname, 'discord.commands'));
+for (const filename of filenames) {
+  const file = require(path.join(__dirname, 'discord.commands', filename));
+  if (
+    'name' in file &&
+    'data' in file &&
+    'execute' in file &&
+    typeof file.name === 'string' &&
+    typeof file.data === 'object' &&
+    typeof file.execute === 'function'
+  ) {
+    print(`Loaded /${file.name}`);
+    discord.commands.set(file.name, {
+      name: file.name,
+      data: file.data,
+      execute: file.execute,
+    });
+  }
 }
 
 // Register handlers.

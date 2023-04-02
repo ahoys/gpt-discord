@@ -9,7 +9,7 @@ const name = 'model';
 /**
  * Will change the model used by GPT for the channel.
  */
-export default {
+module.exports = {
   name,
   data: new SlashCommandBuilder()
     .setName(name)

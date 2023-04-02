@@ -18,8 +18,7 @@ export default (client: IDiscordClient) =>
         body: client.commands.map((command) => command.data.toJSON()),
       })
       .then((response) => {
-        print(response);
-        print('Discord client ready.');
+        print('Ready!');
       })
       .catch((error) =>
         print(`Error registering application commands: ${error}`)

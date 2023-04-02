@@ -9,7 +9,7 @@ const name = 'temperature';
 /**
  * Command to adjust temperature for a channel.
  */
-export default {
+module.exports = {
   name,
   data: new SlashCommandBuilder()
     .setName(name)

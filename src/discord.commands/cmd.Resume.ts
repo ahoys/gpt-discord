@@ -6,7 +6,7 @@ const name = 'resume';
 /**
  * Will resume GPT functions.
  */
-export default {
+module.exports = {
   name,
   data: new SlashCommandBuilder()
     .setName(name)

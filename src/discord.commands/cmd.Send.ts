@@ -12,7 +12,7 @@ const name = 'send';
 /**
  * Will send a message to a channel.
  */
-export default {
+module.exports = {
   name,
   data: new SlashCommandBuilder()
     .setName(name)

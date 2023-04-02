@@ -6,7 +6,7 @@ const name = 'pause';
 /**
  * Will pause GPT functions.
  */
-export default {
+module.exports = {
   name,
   data: new SlashCommandBuilder()
     .setName(name)
