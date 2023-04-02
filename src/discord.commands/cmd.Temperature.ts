@@ -29,14 +29,14 @@ export default {
         .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
+    await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
     const temperaturePercentage = interaction.options.getInteger('temperature');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply({
+      await interaction.editReply({
         content: `Temperature for ${channel?.name} failed to updated.`,
-        ephemeral: true,
       });
     };
     if (
@@ -64,9 +64,8 @@ export default {
               if (updateErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply({
+                await interaction.editReply({
                   content: `Temperature for ${channel.name} updated to ${temperature}.`,
-                  ephemeral: true,
                 });
               }
             }
@@ -78,9 +77,8 @@ export default {
               if (insertErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply({
+                await interaction.editReply({
                   content: `Temperature for ${channel.name} saved to ${temperature}.`,
-                  ephemeral: true,
                 });
               }
             }

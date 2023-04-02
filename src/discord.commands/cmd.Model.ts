@@ -29,14 +29,14 @@ export default {
         .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
+    await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
     const model = interaction.options.getString('model');
     const handleFailure = async (err: Error | null) => {
       print(err);
-      await interaction.reply({
+      await interaction.editReply({
         content: `Model for ${channel?.name} failed to updated.`,
-        ephemeral: true,
       });
     };
     if (
@@ -60,9 +60,8 @@ export default {
                 if (updateErr) {
                   await handleFailure(err);
                 } else {
-                  await interaction.reply({
+                  await interaction.editReply({
                     content: `Model for ${channel.name} updated to ${model}.`,
-                    ephemeral: true,
                   });
                 }
               }
@@ -72,9 +71,8 @@ export default {
               if (insertErr) {
                 await handleFailure(err);
               } else {
-                await interaction.reply({
+                await interaction.editReply({
                   content: `Model for ${channel.name} saved to ${model}.`,
-                  ephemeral: true,
                 });
               }
             });

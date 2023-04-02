@@ -10,7 +10,7 @@ export const executeChatCompletion = async (
   handleSuccess: (content: string) => void,
   handleFailure: (error: unknown) => void
 ) =>
-  openai
+  await openai
     .createChatCompletion({
       max_tokens: config.openai.maxTokens,
       n: 1,

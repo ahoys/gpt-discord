@@ -13,6 +13,7 @@ export interface IDatabase {
 }
 
 export interface ICmdProps {
+  discord: IDiscordClient;
   db: IDatabase;
   interaction: ChatInputCommandInteraction;
   openai: OpenAIApi;
