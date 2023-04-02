@@ -58,8 +58,12 @@ export default {
           await channel
             .send(response)
             .catch((err) => print(err))
-            .finally(() =>
-              interaction.reply({ content: 'Message sent.', ephemeral: true })
+            .finally(
+              async () =>
+                await interaction.reply({
+                  content: 'Message sent.',
+                  ephemeral: true,
+                })
             ),
         (err) => {
           print(err);
