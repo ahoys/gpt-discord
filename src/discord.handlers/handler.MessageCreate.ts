@@ -1,9 +1,9 @@
 import config from '../config';
-import { ClientUser, Events, Message } from 'discord.js';
+import { Events } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
-import { getId } from '../utilities/utilities.cmd';
+import { getId, reply } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import {
   getFirstReference,
@@ -23,6 +23,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       if (!message.content?.trim().length) return;
       if (!message.mentions.has(user)) return;
       if (message.author.bot) return;
+      if (db.paused) return;
       const isReply = message.reference?.messageId !== undefined;
       // There's a bug in typings of fetch, which is why any is used.
       const reference = isReply
@@ -57,21 +58,20 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       }
       if (!messages.length) return;
       // Send request to OpenAI.
-      executeChatCompletion(
-        openai,
-        {
-          model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
-          temperature:
-            (await db.temperatures.getKey(dbId)) ??
-            config.openai.defaultTemperature,
-          messages,
-        },
-        (response) => message.reply(response),
-        (error) => {
-          print(error);
-          message.react('🤷').catch((error) => print(error));
+      executeChatCompletion(openai, {
+        model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+        temperature:
+          (await db.temperatures.getKey(dbId)) ??
+          config.openai.defaultTemperature,
+        messages,
+      }).then(async (response) => {
+        const content = response.data.choices[0].message?.content;
+        if (content) {
+          await reply(message, content);
+        } else {
+          print('No response.');
         }
-      );
+      });
     } catch (error) {
       print(error);
     }

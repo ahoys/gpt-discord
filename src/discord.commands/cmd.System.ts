@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { print } from 'logscribe';
-import { getId } from '../utilities/utilities.cmd';
+import { editReply, getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 
@@ -43,14 +43,16 @@ module.exports = {
         .setKey(id, system)
         .then(
           async () =>
-            await interaction.editReply(
-              `System for ${channel.name} updated to ${system}.`
+            await editReply(
+              interaction,
+              `System for ${channel.name} updated to "${system}".`
             )
         )
         .catch(async (e) => {
           print(e);
-          await interaction.editReply(
-            `System for ${channel.name} failed to updated to ${system}.`
+          await editReply(
+            interaction,
+            `System for ${channel.name} failed to updated to "${system}".`
           );
         });
     }

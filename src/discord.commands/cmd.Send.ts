@@ -1,7 +1,7 @@
 import config from '../config';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { print } from 'logscribe';
-import { getId } from '../utilities/utilities.cmd';
+import { editReply, getId, sendToChannel } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
@@ -57,34 +57,27 @@ module.exports = {
         role: 'user',
         content: prompt,
       });
-      executeChatCompletion(
-        openai,
-        {
-          model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
-          temperature:
-            (await db.temperatures.getKey(dbId)) ??
-            config.openai.defaultTemperature,
-          messages,
-        },
-        async (response) =>
-          await channel
-            .send(response)
-            .catch((err) => print(err))
-            .finally(
-              async () =>
-                await interaction.editReply({
-                  content: 'Message sent.',
-                })
-            ),
-        async (err) => {
+      executeChatCompletion(openai, {
+        model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+        temperature:
+          (await db.temperatures.getKey(dbId)) ??
+          config.openai.defaultTemperature,
+        messages,
+      })
+        .then(async (response) => {
+          const content = response.data.choices[0].message?.content;
+          if (content) {
+            sendToChannel(channel, content).then(() =>
+              editReply(interaction, 'Done')
+            );
+          } else {
+            editReply(interaction, 'No response.');
+          }
+        })
+        .catch((err) => {
           print(err);
-          await interaction
-            .editReply({
-              content: 'Sending failed.',
-            })
-            .catch((err) => print(err));
-        }
-      );
+          editReply(interaction, 'Response failed.');
+        });
     }
   },
 };

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { print } from 'logscribe';
-import { getId } from '../utilities/utilities.cmd';
+import { editReply, getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 
@@ -50,13 +50,15 @@ module.exports = {
         .setKey(id, Number(temperature))
         .then(
           async () =>
-            await interaction.editReply(
+            await editReply(
+              interaction,
               `Model for ${channel.name} updated to ${temperature}.`
             )
         )
         .catch(async (e) => {
           print(e);
-          await interaction.editReply(
+          await editReply(
+            interaction,
             `Model for ${channel.name} failed to updated to ${temperature}.`
           );
         });

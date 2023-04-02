@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { ICmdProps } from '../types';
+import { editReply } from '../utilities/utilities.cmd';
 
 const name = 'resume';
 
@@ -12,17 +13,12 @@ module.exports = {
     .setName(name)
     .setDescription('Will resume GPT functions.'),
   execute: async ({ interaction, paused, handlePause }: ICmdProps) => {
+    await interaction.deferReply({ ephemeral: true });
     if (paused) {
       handlePause(false);
-      await interaction.reply({
-        content: 'GPT has been resumed.',
-        ephemeral: true,
-      });
+      await editReply(interaction, 'GPT has been resumed.');
     } else {
-      await interaction.reply({
-        content: 'GPT is not paused.',
-        ephemeral: true,
-      });
+      await editReply(interaction, 'GPT is not paused.');
     }
   },
 };

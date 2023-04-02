@@ -3,6 +3,7 @@ import path from 'path';
 import config from '../config';
 import { print } from 'logscribe';
 import { IDiscordClient } from '../types';
+import { ChatInputCommandInteraction, Message, TextChannel } from 'discord.js';
 
 /**
  * Returns a unique ID for a guild-channel combination.
@@ -46,3 +47,34 @@ export const getDynamicCommands = (
   }
   return commands;
 };
+
+/**
+ * Sends a message to a channel.
+ * @param channel Target channel.
+ * @param content Message to be sent.
+ */
+export const sendToChannel = async (channel: TextChannel, content: string) =>
+  await channel.send(content).catch((error) => print(error));
+
+/**
+ * Edits a deferred reply.
+ * @param interaction Discord interaction.
+ * @param content Message to be sent.
+ */
+export const editReply = async (
+  interaction: ChatInputCommandInteraction,
+  content: string
+) =>
+  await interaction
+    .editReply({
+      content,
+    })
+    .catch((error) => print(error));
+
+/**
+ * Replies to a message.
+ * @param message Discord message.
+ * @param content Message to be sent.
+ */
+export const reply = async (message: Message, content: string) =>
+  await message.reply(content).catch((error) => print(error));
