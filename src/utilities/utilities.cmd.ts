@@ -12,6 +12,12 @@ import { IDiscordClient } from '../types';
  */
 export const getId = (guild: string, channel: string) => `${guild}-${channel}`;
 
+/**
+ * Loads all commands from the given directory.
+ * @param commands Existing commands Collection.
+ * @param dirPath Path to commands directory.
+ * @returns A Collection of commands.
+ */
 export const getDynamicCommands = (
   commands: IDiscordClient['commands'],
   dirPath: string
@@ -34,6 +40,8 @@ export const getDynamicCommands = (
         data: file.data,
         execute: file.execute,
       });
+    } else {
+      print(`Ignored /${filename}. Ignored or invalid command.`);
     }
   }
   return commands;
