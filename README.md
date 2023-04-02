@@ -20,7 +20,7 @@ An Open AI powered Discord bot with great flexibility and security.
 ### How to install for development
 
 - `yarn install`
-- Create `.dev.env`, see the configuration below.
+- Create `.dev.env` and `.jest.env`, see the configuration below.
 - Run with `yarn watch`
 
 ### Configuration for .env
