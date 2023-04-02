@@ -9,9 +9,21 @@ An Open AI powered Discord bot with great flexibility and security.
 - Modern Node.js with NPM installed.
 - Yarn installed `npm i -g yarn`
 
-## Configuration
+# Installation
 
-Download this repository and create an `.env` file at the root of the project folder.
+### How to install for production
+
+- `yarn install --prod`
+- Create `.env`, see the configuration below.
+- Run with `yarn start`
+
+### How to install for development
+
+- `yarn install`
+- Create `.dev.env`, see the configuration below.
+- Run with `yarn watch`
+
+### Configuration for .env
 
 ```
 OPENAI_APIKEY=OpenAI application key.
@@ -28,12 +40,6 @@ DISCORD_MAXCONTENTLENGTH=How long can the user input be? This likely affects how
 [You can read default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
 
 [OpenAI reference manual](https://platform.openai.com/docs/api-reference/completions/create)
-
-## How to install
-
-- After you have created the .env file, run `yarn install && yarn build`
-- A `build` directory will appear that will contain the finished application.
-- Run the application with Node.
 
 ## Inviting the bot
 
@@ -54,7 +60,3 @@ All this is to prevent data mining and to also make sure you don't run out of To
 ## Is the bot cheap to use by default?
 
 Yes. The payload that is sent to the API is kept at the very minimum. For further optimization, make sure to use the default model (gpt-3.5-turbo) and not to set the OPENAI_SYSTEM environment variable.
-
-## What's the 🛑 reaction?
-
-That reaction means that something went wrong. Perhaps the bot couldn't access the OpenAI API? See the logs for more.

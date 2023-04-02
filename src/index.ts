@@ -21,11 +21,15 @@ print(config);
 // a key-value store.
 const db: IDatabase = {
   paused: false,
-  models: jsonscribe<string>({ path: path.join(__dirname, 'models.json') }),
-  temperatures: jsonscribe<number>({
-    path: path.join(__dirname, 'temperatures.json'),
+  models: jsonscribe<string>({
+    path: path.join(__dirname, '..', 'db', 'models.json'),
   }),
-  systems: jsonscribe<string>({ path: path.join(__dirname, 'systems.json') }),
+  temperatures: jsonscribe<number>({
+    path: path.join(__dirname, '..', 'db', 'temperatures.json'),
+  }),
+  systems: jsonscribe<string>({
+    path: path.join(__dirname, '..', 'db', 'systems.json'),
+  }),
 };
 
 // The OpenAI API client.
