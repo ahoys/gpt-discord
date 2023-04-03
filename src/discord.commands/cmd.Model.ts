@@ -3,6 +3,7 @@ import { print } from 'logscribe';
 import { editReply, getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
+import config from '../config';
 
 const name = 'model';
 
@@ -26,19 +27,18 @@ module.exports = {
         .setDescription(
           'The model to use. See https://platform.openai.com/playground for names.'
         )
-        .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
     await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
-    const model = interaction.options.getString('model');
+    const model =
+      interaction.options.getString('model') || config.openai.defaultModel;
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
       channel.type === ChannelType.GuildText &&
-      typeof model === 'string' &&
-      model.length
+      typeof model === 'string'
     ) {
       const id = getId(guild, channel.id);
       await db.models

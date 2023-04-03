@@ -3,6 +3,7 @@ import { print } from 'logscribe';
 import { editReply, getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
+import config from '../config';
 
 const name = 'temperature';
 
@@ -26,13 +27,14 @@ module.exports = {
         .setMinValue(0)
         .setMaxValue(100)
         .setDescription('0: Very exact, 100: Very random.')
-        .setRequired(true)
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
     await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
-    const temperaturePercentage = interaction.options.getInteger('temperature');
+    const temperaturePercentage =
+      interaction.options.getInteger('temperature') ??
+      config.openai.defaultTemperature * 100;
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
