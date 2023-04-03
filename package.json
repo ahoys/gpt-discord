@@ -2,7 +2,7 @@
   "name": "gpt-discord",
   "author": "Ari Höysniemi",
   "scripts": {
-    "start": "cross-env NODE_ENV=production ts-node -r dotenv/config src/index.ts dotenv_config_path=.env",
+    "start": "cross-env NODE_ENV=production ts-node --files -r dotenv/config src/index.ts dotenv_config_path=.env",
     "watch": "cross-env NODE_ENV=development nodemon -r dotenv/config --exec ts-node --files src/index.ts --ignore db/*.json dotenv_config_path=.dev.env",
     "test": "tsc --noEmit --skipLibCheck -p . && jest --passWithNoTests",
     "lint": "eslint --fix-dry-run"
