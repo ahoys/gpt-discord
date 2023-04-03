@@ -64,12 +64,27 @@ export const sendToChannel = async (channel: TextChannel, content: string) =>
 export const editReply = async (
   interaction: ChatInputCommandInteraction,
   content: string
-) =>
-  await interaction
-    .editReply({
-      content,
-    })
-    .catch((error) => print(error));
+) => {
+  if (content.length < 2000) {
+    await interaction
+      .editReply({
+        content,
+      })
+      .catch((error) => print(error));
+  } else {
+    const buffer = Buffer.from(content);
+    await interaction
+      .editReply({
+        files: [
+          {
+            attachment: buffer,
+            name: 'reply.txt',
+          },
+        ],
+      })
+      .catch((error) => print(error));
+  }
+};
 
 /**
  * Replies to a message.
