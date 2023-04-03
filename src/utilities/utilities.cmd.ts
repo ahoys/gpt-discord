@@ -27,10 +27,10 @@ export const getDynamicCommands = (
   for (const filename of filenames) {
     const file = require(path.join(dirPath, filename));
     if (
-      !config.discord.ignoreCommands.includes(filename) &&
       'name' in file &&
       'data' in file &&
       'execute' in file &&
+      !config.discord.ignoreCommands.includes(file.name) &&
       typeof file.name === 'string' &&
       typeof file.data === 'object' &&
       typeof file.execute === 'function'
@@ -42,7 +42,7 @@ export const getDynamicCommands = (
         execute: file.execute,
       });
     } else {
-      print(`Ignored /${filename}. Ignored or invalid command.`);
+      print(`Ignored /${filename}`);
     }
   }
   return commands;

@@ -19,14 +19,22 @@ print(config);
 // a key-value store.
 const db: IDatabase = {
   paused: false,
+  systems: jsonscribe<string>({
+    path: path.join(__dirname, '..', 'db', 'systems.json'),
+  }),
   models: jsonscribe<string>({
     path: path.join(__dirname, '..', 'db', 'models.json'),
   }),
   temperatures: jsonscribe<number>({
     path: path.join(__dirname, '..', 'db', 'temperatures.json'),
   }),
-  systems: jsonscribe<string>({
-    path: path.join(__dirname, '..', 'db', 'systems.json'),
+  embeddings: jsonscribe<
+    {
+      fact: string;
+      vector: number[];
+    }[]
+  >({
+    path: path.join(__dirname, '..', 'db', 'embeddings.json'),
   }),
 };
 

@@ -44,12 +44,12 @@ module.exports = {
     ) {
       const dbId = getId(guild, channel.id);
       const messages: CreateChatCompletionRequest['messages'] = [];
-      if (config.openai.system?.trim()) {
+      if (config.openai.defaultSystem?.trim()) {
         messages.push({
           role: 'system',
           content:
             (await db.systems.getKey(dbId)) ??
-            config.openai.system ??
+            config.openai.defaultSystem ??
             `You are in Discord with username ${discord.user?.username}.` +
               config.openai.improvedMath
               ? ' Use steps with math.'

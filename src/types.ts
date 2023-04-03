@@ -12,6 +12,12 @@ export interface IDatabase {
   models: JSONScribeFile<string>;
   temperatures: JSONScribeFile<number>;
   systems: JSONScribeFile<string>;
+  embeddings: JSONScribeFile<
+    {
+      fact: string;
+      vector: number[];
+    }[]
+  >;
 }
 
 export interface ICmdProps {
