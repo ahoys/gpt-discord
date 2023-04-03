@@ -5,7 +5,7 @@ const production = {
     defaultModel: process.env.OPENAI_DEFAULTMODEL || 'gpt-3.5-turbo',
     defaultTemperature: Number(process.env.OPENAI_DEFAULTTEMPERATURE) || 0.64,
     maxTokens: Number(process.env.OPENAI_MAXTOKENS) || 2048,
-    improvedMath: process.env.OPENAI_IMPROVEDMATH !== 'false',
+    improvedMath: process.env.OPENAI_IMPROVEDMATH === 'true',
     embeddingModel:
       process.env.OPENAI_EMBEDDINGMODEL || 'text-embedding-ada-002',
   },

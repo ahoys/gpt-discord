@@ -46,9 +46,12 @@ module.exports = {
       const messages: CreateChatCompletionRequest['messages'] = [];
       const storedSystem =
         db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
+      const mathExtension = config.openai.improvedMath
+        ? ' Use steps if applicable.'
+        : '';
       messages.push({
         role: 'system',
-        content: (storedSystem + ' Use steps in math.').trim(),
+        content: (storedSystem + mathExtension).trim(),
       });
       messages.push({
         role: 'user',
