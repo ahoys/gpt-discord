@@ -48,7 +48,7 @@ module.exports = {
         db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
       messages.push({
         role: 'system',
-        content: (storedSystem + ' Use steps when applicable.').trim(),
+        content: (storedSystem + ' Use steps in math.').trim(),
       });
       messages.push({
         role: 'user',

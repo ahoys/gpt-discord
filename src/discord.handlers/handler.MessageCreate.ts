@@ -43,7 +43,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
       messages.push({
         role: 'system',
-        content: (storedSystem + ' Use steps when applicable.').trim(),
+        content: (storedSystem + ' Use steps in math.').trim(),
       });
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
