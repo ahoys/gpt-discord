@@ -39,18 +39,16 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
-      if (config.openai.defaultSystem?.trim()) {
-        messages.push({
-          role: 'system',
-          content:
-            (await db.systems.getKey(dbId)) ??
-            config.openai.defaultSystem ??
-            `You are in Discord with username ${user.username}.` +
-              config.openai.improvedMath
-              ? ' Use steps with math.'
-              : '',
-        });
-      }
+      messages.push({
+        role: 'system',
+        content:
+          (await db.systems.getKey(dbId)) ??
+          config.openai.defaultSystem ??
+          `You are in Discord with username ${user.username}.` +
+            config.openai.improvedMath
+            ? ' Use steps with math.'
+            : '',
+      });
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
         if (msg) messages.push(msg);
