@@ -31,6 +31,7 @@ OPENAI_DEFAULTMODEL=See OpenAPI reference manual (#model).
 OPENAI_DEFAULTTEMPERATURE=See OpenAPI reference manual (#temperature).
 OPENAI_MAXTOKENS=How many tokens can a singular request cost?
 OPENAI_SYSTEM=With a one sentence describe the bot. (optional).
+OPENAI_IMPROVEDMATH=Makes the model more precise with math (default=true).
 DISCORD_APPID=Discord application key.
 DISCORD_TOKEN=Discord Bot token.
 DISCORD_ROLEID=Discord role with permissions to commands.

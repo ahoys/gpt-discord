@@ -50,7 +50,10 @@ module.exports = {
           content:
             (await db.systems.getKey(dbId)) ??
             config.openai.system ??
-            `You are in Discord with username ${discord.user?.username}.`,
+            `You are in Discord with username ${discord.user?.username}.` +
+              config.openai.improvedMath
+              ? ' Use steps with math.'
+              : '',
         });
       }
       messages.push({

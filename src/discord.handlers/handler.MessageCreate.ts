@@ -45,7 +45,10 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
           content:
             (await db.systems.getKey(dbId)) ??
             config.openai.system ??
-            `You are in Discord with username ${user.username}.`,
+            `You are in Discord with username ${user.username}.` +
+              config.openai.improvedMath
+              ? ' Use steps with math.'
+              : '',
         });
       }
       if (firstReference) {

@@ -5,6 +5,7 @@ const production = {
     defaultTemperature: Number(process.env.OPENAI_DEFAULTTEMPERATURE) || 0.64,
     maxTokens: Number(process.env.OPENAI_MAXTOKENS) || 2048,
     system: process.env.OPENAI_SYSTEM,
+    improvedMath: process.env.OPENAI_IMPROVEDMATH !== 'false',
   },
   discord: {
     appId: process.env.DISCORD_APPID,
