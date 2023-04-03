@@ -5,7 +5,7 @@ An Open AI powered Discord bot with great flexibility and security.
 ## Requirements
 
 - OpenAI account and a valid API-key.
-- Discord application for the bot.
+- Discord application for the bot (see inviting the bot below).
 - Modern Node.js with NPM installed.
 - Yarn installed `npm i -g yarn`
 
@@ -45,7 +45,13 @@ DISCORD_CUSTOMCOMMANDSDIR=Your unofficial custom commands folder.
 
 ## Inviting the bot
 
-You need to invite the bot onto your server. When doing this, make sure you have the following permissions enabled: `bot`, `applications.commands`, `send messages` and `add reactions`.
+You need to invite the bot onto your server. When doing this, make sure you have the following scopes/permissions enabled:
+
+- scope: bot
+- scope: applications.commands
+- permissions: Send Messages
+- permissions: Send Messages in Threads
+- permissions: Read Messages/View Channels
 
 # FAQ
 

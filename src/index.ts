@@ -41,7 +41,12 @@ const openai = new OpenAIApi(
 // The Discord API client.
 // This is used to communicate with the Discord API.
 const discord = new DiscordJs({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent,
+  ],
 }) as IDiscordClient;
 
 // Read all official commands from the commands-folder.

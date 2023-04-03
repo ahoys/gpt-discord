@@ -21,7 +21,11 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const { guild, channel } = message;
       if (!user || !guild || !channel) return;
       if (!message.content?.trim().length) return;
-      if (!message.mentions.has(user)) return;
+      if (
+        !message.mentions.has(user) &&
+        !message.content.includes(`@<${user.id}>`)
+      )
+        return;
       if (message.author.bot) return;
       if (db.paused) return;
       const isReply = message.reference?.messageId !== undefined;
