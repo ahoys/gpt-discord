@@ -21,26 +21,22 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption((option) =>
-      option
-        .setName('system')
-        .setDescription('The system to use.')
-        .setRequired(true)
+      option.setName('system').setDescription('The system to use.')
     ),
   execute: async ({ db, interaction }: ICmdProps) => {
     await interaction.deferReply({ ephemeral: true });
     const guild = interaction.guild?.id;
     const channel = interaction.options.getChannel('channel');
-    const system = interaction.options.getString('system');
+    const system = interaction.options.getString('system') ?? '';
     if (
       typeof guild === 'string' &&
       typeof channel?.id === 'string' &&
       channel.type === ChannelType.GuildText &&
-      typeof system === 'string' &&
-      system.length
+      typeof system === 'string'
     ) {
       const id = getId(guild, channel.id);
       await db.systems
-        .setKey(id, system)
+        .setKey(id, system.trim())
         .then(
           async () =>
             await editReply(
