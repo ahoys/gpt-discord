@@ -76,5 +76,18 @@ export const editReply = async (
  * @param message Discord message.
  * @param content Message to be sent.
  */
-export const reply = async (message: Message, content: string) =>
-  await message.reply(content).catch((error) => print(error));
+export const reply = async (message: Message, content: string) => {
+  if (content.length < 2000) {
+    await message.reply(content).catch((error) => print(error));
+  } else {
+    const buffer = Buffer.from(content);
+    await message.reply({
+      files: [
+        {
+          attachment: buffer,
+          name: 'reply.txt',
+        },
+      ],
+    });
+  }
+};

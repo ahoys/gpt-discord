@@ -13,6 +13,8 @@ import { getDynamicCommands } from './utilities/utilities.cmd';
 
 print(config);
 
+(process as any).noDeprecation = true;
+
 // The database, which is basically
 // a key-value store.
 const db: IDatabase = {
