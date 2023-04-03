@@ -1346,9 +1346,9 @@ dotenv@^16.0.3:
   integrity sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==
 
 electron-to-chromium@^1.4.284:
-  version "1.4.348"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.348.tgz#f49379dc212d79f39112dd026f53e371279e433d"
-  integrity sha512-gM7TdwuG3amns/1rlgxMbeeyNoBFPa+4Uu0c7FeROWh4qWmvSOnvcslKmWy51ggLKZ2n/F/4i2HJ+PVNxH9uCQ==
+  version "1.4.349"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.349.tgz#c65a4378cea805accfe6f585730ce2a3afe07f1d"
+  integrity sha512-34LBfVDiL6byWorSmQOPwq4gD5wpN8Mhh5yPGQr67FbcxsfUS0BDJP9y6RykSgeWVUfSkN/2dChywnsrmKVyUg==
 
 emittery@^0.13.1:
   version "0.13.1"
@@ -2288,10 +2288,10 @@ json5@^2.2.2, json5@^2.2.3:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
-jsonscribe@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/jsonscribe/-/jsonscribe-1.1.1.tgz#18d0949a61ac46e4ec0ea39b36a1170d6c67536f"
-  integrity sha512-pSMTrkR/3ioWUaFfxJEp25pSy1Ol0gPrTp//1ytPVxT8Wbifx1XE+hexVZhAx3RUmo2rEkCA+eWn2j8Osc3uag==
+jsonscribe@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/jsonscribe/-/jsonscribe-1.1.2.tgz#60b7388a59afd3441d3f59b53f39891027e1de4a"
+  integrity sha512-QHeJ5za2vjrIIh6H0RWIh2TP4iWpaqgjB4r14gYsKwvRQ0/FM1VMifB0BJzvIrGqXE7H8esvmNPoCFMFE+xLrg==
 
 kleur@^3.0.3:
   version "3.0.3"

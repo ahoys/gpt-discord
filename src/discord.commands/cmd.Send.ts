@@ -44,25 +44,20 @@ module.exports = {
     ) {
       const dbId = getId(guild, channel.id);
       const messages: CreateChatCompletionRequest['messages'] = [];
+      const storedSystem =
+        db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
       messages.push({
         role: 'system',
-        content:
-          (await db.systems.getKey(dbId)) ??
-          config.openai.defaultSystem ??
-          `You are in Discord with username ${discord.user?.username}.` +
-            config.openai.improvedMath
-            ? ' Use steps with math.'
-            : '',
+        content: (storedSystem + ' Use steps when applicable.').trim(),
       });
       messages.push({
         role: 'user',
         content: prompt,
       });
       executeChatCompletion(openai, {
-        model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+        model: db.models.getKey(dbId) ?? config.openai.defaultModel,
         temperature:
-          (await db.temperatures.getKey(dbId)) ??
-          config.openai.defaultTemperature,
+          db.temperatures.getKey(dbId) ?? config.openai.defaultTemperature,
         messages,
       })
         .then(async (response) => {

@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { print } from 'logscribe';
 import { editReply } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
@@ -35,24 +34,16 @@ module.exports = {
     ) {
       const embedding = await executeEmbedding(openai, fact);
       if (Array.isArray(embedding) && embedding.length) {
-        const embeddings = (await db.embeddings.getKey(guild)) || [];
+        const embeddings = db.embeddings.getKey(guild) || [];
         embeddings.push({
           fact,
           vector: embedding,
         });
-        await db.embeddings
-          .setKey(guild, embeddings)
-          .then(
-            async () =>
-              await editReply(
-                interaction,
-                `Learned "${fact}" for ${interaction.guild?.name}.`
-              )
-          )
-          .catch(async (e) => {
-            print(e);
-            await editReply(interaction, 'Was unable to learn the fact.');
-          });
+        db.embeddings.setKey(guild, embeddings);
+        await editReply(
+          interaction,
+          `Learned "${fact}" for ${interaction.guild?.name}.`
+        );
       } else {
         await editReply(interaction, 'Was unable to learn the fact.');
       }

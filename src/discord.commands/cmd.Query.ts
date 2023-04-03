@@ -37,7 +37,7 @@ module.exports = {
       query.length
     ) {
       const id = getId(guild, channel.id);
-      const embeddings = (await db.embeddings.getKey(guild)) || [];
+      const embeddings = db.embeddings.getKey(guild) || [];
       const context = await getContext(openai, embeddings, query);
       const messages: CreateChatCompletionRequest['messages'] = [
         {
@@ -50,7 +50,7 @@ module.exports = {
         content: 'Question: ' + query,
       });
       executeChatCompletion(openai, {
-        model: (await db.models.getKey(id)) ?? config.openai.defaultModel,
+        model: db.models.getKey(id) ?? config.openai.defaultModel,
         temperature: 0.1,
         messages,
       })

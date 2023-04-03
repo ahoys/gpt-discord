@@ -39,15 +39,11 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
+      const storedSystem =
+        db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
       messages.push({
         role: 'system',
-        content:
-          (await db.systems.getKey(dbId)) ??
-          config.openai.defaultSystem ??
-          `You are in Discord with username ${user.username}.` +
-            config.openai.improvedMath
-            ? ' Use steps with math.'
-            : '',
+        content: (storedSystem + ' Use steps when applicable.').trim(),
       });
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
@@ -64,10 +60,9 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       if (!messages.length) return;
       // Send request to OpenAI.
       executeChatCompletion(openai, {
-        model: (await db.models.getKey(dbId)) ?? config.openai.defaultModel,
+        model: db.models.getKey(dbId) ?? config.openai.defaultModel,
         temperature:
-          (await db.temperatures.getKey(dbId)) ??
-          config.openai.defaultTemperature,
+          db.temperatures.getKey(dbId) ?? config.openai.defaultTemperature,
         messages,
       }).then(async (response) => {
         const content = response.data.choices[0].message?.content;

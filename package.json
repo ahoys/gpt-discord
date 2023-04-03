@@ -18,7 +18,7 @@
     "cross-env": "^7.0.3",
     "discord.js": "^14.8.0",
     "dotenv": "^16.0.3",
-    "jsonscribe": "^1.1.1",
+    "jsonscribe": "^1.1.2",
     "logscribe": "^2.0.4",
     "openai": "^3.2.1",
     "ts-node": "^10.9.1",

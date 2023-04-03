@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { print } from 'logscribe';
 import { editReply, getId } from '../utilities/utilities.cmd';
 import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
@@ -41,22 +40,11 @@ module.exports = {
       typeof model === 'string'
     ) {
       const id = getId(guild, channel.id);
-      await db.models
-        .setKey(id, model)
-        .then(
-          async () =>
-            await editReply(
-              interaction,
-              `Model for ${channel.name} updated to ${model}.`
-            )
-        )
-        .catch(async (e) => {
-          print(e);
-          await editReply(
-            interaction,
-            `Model for ${channel.name} failed to updated to ${model}.`
-          );
-        });
+      db.models.setKey(id, model);
+      await editReply(
+        interaction,
+        `Model for ${channel.name} updated to ${model}.`
+      );
     }
   },
 };
