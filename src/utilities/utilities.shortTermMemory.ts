@@ -55,8 +55,8 @@ export const putToShortTermMemory = async (
     return;
   }
   let content = message.cleanContent.trim();
-  // Don't remember questions.
-  if (content.includes('?')) return;
+  // Don't remember questions or too long messages.
+  if (content.includes('?') || content.length > 512) return;
   // Remove the first @mention from the content.
   if (content.startsWith(`@${username}`)) {
     content = content.replace(`@${username}`, '');

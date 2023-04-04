@@ -9,7 +9,7 @@ const production = {
     embeddingModel:
       process.env.OPENAI_EMBEDDINGMODEL || 'text-embedding-ada-002',
     maxMemoryRequestsInMinute:
-      Number(process.env.OPENAI_MAXMEMORYREQUESTSINMINUTE) || 10,
+      Number(process.env.OPENAI_MAXMEMORYREQUESTSINMINUTE) || 30,
   },
   discord: {
     appId: process.env.DISCORD_APPID,
