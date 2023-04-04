@@ -42,9 +42,9 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
       const system = await getSystemMessage(openai, db, dbId, message);
+      putToShortTermMemory(openai, db, message, client.user?.username);
       if (system) {
         messages.push(system);
-        putToShortTermMemory(openai, db, message, client.user?.username);
       }
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);

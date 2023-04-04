@@ -54,7 +54,7 @@ export const putToShortTermMemory = async (
     // Buffer the request and return early.
     return;
   }
-  let content = message.cleanContent.trim().toLowerCase();
+  let content = message.cleanContent.trim();
   // Don't remember questions.
   if (content.includes('?')) return;
   // Remove the first @mention from the content.
@@ -72,7 +72,7 @@ export const putToShortTermMemory = async (
         db.shortMemory.shift();
       }
       db.shortMemory.push({
-        fact: `user ${message.author.username} said that ${content}`,
+        fact: content,
         vector,
       });
     }
