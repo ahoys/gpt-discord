@@ -33,6 +33,7 @@ OPENAI_DEFAULTTEMPERATURE=See OpenAPI reference manual (#temperature).
 OPENAI_MAXTOKENS=How many tokens can a singular request cost?
 OPENAI_IMPROVEDMATH=Makes the model more precise with math (default=false).
 OPENAI_EMBEDDINGMODEL=Model to be used with embedding (text-embedding-ada-002).
+OPENAI_MAXMEMORYREQUESTSINMINUTE=How often can the short term memory be updated. Set 0 to disable.
 DISCORD_APPID=Discord application key.
 DISCORD_TOKEN=Discord Bot token.
 DISCORD_ROLEID=Discord role with permissions to commands.

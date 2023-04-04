@@ -28,6 +28,7 @@ const db: IDatabase = {
   temperatures: jsonscribe<number>({
     path: path.join(__dirname, '..', 'db', 'temperatures.json'),
   }),
+  shortMemory: [],
   embeddings: jsonscribe<
     {
       fact: string;
