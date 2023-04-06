@@ -5,6 +5,8 @@ import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import { IDatabase } from '../types';
 import { Message } from 'discord.js';
 
+const MEMORY_THRESHOLD = 0.82;
+
 /**
  * Get from short term memory.
  */
@@ -20,24 +22,38 @@ export const getFromShortTermMemory = async (
   if (config.openai.maxMemoryRequestsInMinute <= 0) return memory;
   await executeEmbedding(openai, content).then((vector) => {
     if (Array.isArray(vector)) {
-      let smallest = -1;
-      let similarity = 0;
+      const memories: {
+        similarity: number;
+        fact: string;
+      }[] = [];
       for (let i = 0; i < db.shortMemory.length; i++) {
-        const value = compute_cosine_similarity(
+        const similarity = compute_cosine_similarity(
           db.shortMemory[i].vector,
           vector
         );
-        if (value > similarity && value > 0.8) {
-          smallest = i;
-          similarity = value;
-          if (typeof db.shortMemory[i].fact === 'string') {
-            memory = db.shortMemory[i].fact;
-          }
+        if (config.isDevelopment) {
+          console.log(
+            'Memory:',
+            similarity,
+            similarity >= MEMORY_THRESHOLD,
+            db.shortMemory[i].fact
+          );
+        }
+        if (similarity >= MEMORY_THRESHOLD) {
+          memories.push({
+            similarity,
+            fact: db.shortMemory[i].fact,
+          });
         }
       }
+      memories.sort((a, b) => b.similarity - a.similarity);
+      memory = memories
+        .map((m) => m.fact)
+        .join(', ')
+        .substring(0, 512);
     }
   });
-  return memory.trim();
+  return memory.length >= 512 ? memory.trim() + '...' : memory.trim();
 };
 
 let requestCount = 0;
@@ -63,7 +79,7 @@ export const putToShortTermMemory = async (
   if (content.includes('?') || content.length > 512) return;
   // Remove the first @mention from the content.
   if (content.startsWith(`@${username}`)) {
-    content = content.replace(`@${username}`, '');
+    content = content.replace(`@${username}`, '').trim();
   }
   // Increment the request count and reset it after a minute
   requestCount++;
