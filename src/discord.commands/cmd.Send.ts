@@ -7,6 +7,7 @@ import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
 import { getSystemMessage } from '../utilities/utilities.system';
+import { getDynamicTemperature } from '../utilities/utilities.temperature';
 
 const name = 'send';
 
@@ -54,8 +55,7 @@ module.exports = {
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
-        temperature:
-          db.temperatures.getKey(dbId) ?? config.openai.defaultTemperature,
+        temperature: getDynamicTemperature(db, dbId),
         messages,
       })
         .then(async (response) => {

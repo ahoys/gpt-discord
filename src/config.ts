@@ -18,6 +18,8 @@ const production = {
         process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
       appendUsernameToSystem:
         process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM === 'true',
+      useDynamicTemperature:
+        process.env.OPENAI_TUNE_USEDYNAMICTEMPERATURE !== 'false',
     },
   },
   discord: {
@@ -42,6 +44,8 @@ const development: typeof production = {
         process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
       appendUsernameToSystem:
         process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM !== 'false',
+      useDynamicTemperature:
+        process.env.OPENAI_TUNE_USEDYNAMICTEMPERATURE !== 'false',
     },
   },
 };

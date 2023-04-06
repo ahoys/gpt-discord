@@ -41,7 +41,7 @@ DISCORD_IGNORECOMMANDS=List of command names that should not be available.
 DISCORD_CUSTOMCOMMANDSDIR=Your unofficial custom commands folder.
 ```
 
-[You can read default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
+[You can read the default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
 
 [OpenAI reference manual](https://platform.openai.com/docs/api-reference/completions/create)
 
@@ -51,12 +51,19 @@ The following commands expand the bot over basic capabilities but may also cause
 
 ```
 # Enables experimental multilevel memory for the bot.
-OPENAI_TUNE_APPENDMEMORYTOCONTEXT
+OPENAI_TUNE_APPENDMEMORYTOCONTEXT=true/false
+
 # Improves math capabilities by encouraging steps on a system level.
-OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH=true
+OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH=true/false
+
 # The bot will become aware of the Discord username.
-OPENAI_TUNE_APPENDUSERNAMETOSYSTEM=true
+OPENAI_TUNE_APPENDUSERNAMETOSYSTEM=true/false
+
+# The prompt defines the temperature. For example questions use lower.
+OPENAI_TUNE_USEDYNAMICTEMPERATURE=true/false
 ```
+
+[You can read the default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
 
 ## Inviting the bot
 

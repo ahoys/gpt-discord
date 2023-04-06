@@ -11,6 +11,7 @@ import {
 } from '../utilities/utilities.discord';
 import { getSystemMessage } from '../utilities/utilities.system';
 import { putToShortTermMemory } from '../utilities/utilities.shortTermMemory';
+import { getDynamicTemperature } from '../utilities/utilities.temperature';
 
 /**
  * Handle incoming messages.
@@ -62,8 +63,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
-        temperature:
-          db.temperatures.getKey(dbId) ?? config.openai.defaultTemperature,
+        temperature: getDynamicTemperature(db, dbId, message),
         messages,
       }).then(async (response) => {
         const content = response.data.choices[0].message?.content;
