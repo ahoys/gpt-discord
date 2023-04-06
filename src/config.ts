@@ -1,4 +1,5 @@
 const production = {
+  isDevelopment: false,
   openai: {
     apiKey: process.env.OPENAI_APIKEY,
     defaultSystem: process.env.OPENAI_DEFAULTSYSTEM,
@@ -23,6 +24,7 @@ const production = {
 
 const development = {
   ...production,
+  isDevelopment: true,
 };
 
 export default process.env.NODE_ENV === 'production' ? production : development;

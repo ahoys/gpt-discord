@@ -7,10 +7,14 @@ import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
 export const executeChatCompletion = async (
   openai: OpenAIApi,
   configuration: CreateChatCompletionRequest
-) =>
-  await openai.createChatCompletion({
+) => {
+  if (config.isDevelopment) {
+    console.log(configuration);
+  }
+  return await openai.createChatCompletion({
     max_tokens: config.openai.maxTokens,
     n: 1,
     stream: false,
     ...configuration,
   });
+};
