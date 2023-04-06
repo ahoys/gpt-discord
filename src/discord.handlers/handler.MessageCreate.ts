@@ -59,7 +59,6 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         if (msg) messages.push(msg);
       }
       if (!messages.length) return;
-      console.log(messages);
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
