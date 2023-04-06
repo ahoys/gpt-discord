@@ -13,6 +13,8 @@ export const getFromShortTermMemory = async (
   db: IDatabase,
   message: Message
 ): Promise<string | void> => {
+  // Don't use memory if it's disabled.
+  if (!config.openai.tune.appendMemoryToContext) return;
   const content = message.cleanContent.trim().toLowerCase();
   let memory = '';
   if (config.openai.maxMemoryRequestsInMinute <= 0) return memory;
@@ -49,6 +51,8 @@ export const putToShortTermMemory = async (
   message: Message,
   username: string | undefined
 ): Promise<void> => {
+  // Don't use memory if it's disabled.
+  if (!config.openai.tune.appendMemoryToContext) return;
   // Check if we've exceeded the maximum number of requests per minute
   if (requestCount >= config.openai.maxMemoryRequestsInMinute) {
     // Buffer the request and return early.

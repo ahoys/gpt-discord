@@ -104,16 +104,16 @@ You need to invite the bot onto your server. When doing this, make sure you have
 
 ## Does the bot remember context?
 
-Yes! If you want to continue conversation with the bot, reply to it. Replying will let the bot access the previous question and answer. This is a good way to get clarifications or to continue conversation. The bot also remembers some questions for a short period of time. Think of it as a short term memory.
+Yes! If you want to continue conversation with the bot, reply to it. Replying will let the bot access the previous question and answer. This is a good way to get clarifications or to continue conversation. The bot also remembers some claims for a short period of time. Think of it as a short term memory.
 
 ## How safe it is to use the bot?
 
 The bot doesn't read conversations automatically. You need to mention it to get a response. It also won't access your message history if you don't explicitly request it by replying (see above).
 
-All this is to prevent data mining and to also make sure you don't run out of Tokens in a second.
+All this is to prevent data mining and to also make sure you don't run out of Tokens in seconds.
 
-However, it is good to understand that the bot has a short term memory. This means that the bot can remember something on channel A that was said on channel B. I'd suggest using the bot only on a one server at time due to this. Create an another instance if you need more.
+However, it is good to understand that the bot has a short term memory. This means that the bot can remember something on channel A that was said on channel B. I'd suggest using the bot only on a one server at time due to this. Create an another instance if you need more bots.
 
 ## Is the bot cheap to use by default?
 
-Yes. The payload that is sent to the API is kept at the very minimum. For further optimization, make sure to use the default model (gpt-3.5-turbo) and not to set the OPENAI_SYSTEM environment variable.
+Generally speaking, yes. As cheap as it gets. If you want to further reduce the expenses, disable the memory `OPENAI_TUNE_APPENDMEMORYTOCONTEXT=false` and don't give the bot system-level charasteristics.
