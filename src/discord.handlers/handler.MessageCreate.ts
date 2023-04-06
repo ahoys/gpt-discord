@@ -10,7 +10,10 @@ import {
   getMessageForMessages,
 } from '../utilities/utilities.discord';
 import { getSystemMessage } from '../utilities/utilities.system';
-import { putToShortTermMemory } from '../utilities/utilities.shortTermMemory';
+import {
+  getMemoryMessages,
+  putToShortTermMemory,
+} from '../utilities/utilities.shortTermMemory';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 
 /**
@@ -41,7 +44,8 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         : undefined;
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
-      const messages: CreateChatCompletionRequest['messages'] = [];
+      const messages: CreateChatCompletionRequest['messages'] =
+        await getMemoryMessages(openai, db, message.content);
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
         if (msg) messages.push(msg);
@@ -55,9 +59,14 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         if (msg) messages.push(msg);
       }
       if (!messages.length) return;
-      const system = await getSystemMessage(client, openai, db, dbId, message);
-      putToShortTermMemory(openai, db, message, client.user?.username);
+      const system = await getSystemMessage(
+        client,
+        db,
+        dbId,
+        messages.length > 1
+      );
       if (system) messages.unshift(system);
+      putToShortTermMemory(openai, db, message, client.user?.username);
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,

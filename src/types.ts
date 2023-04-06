@@ -8,7 +8,8 @@ export interface IDiscordClient extends DiscordJs {
 }
 
 export interface IMemoryObject {
-  fact: string;
+  name: string;
+  content: string;
   vector: number[];
 }
 

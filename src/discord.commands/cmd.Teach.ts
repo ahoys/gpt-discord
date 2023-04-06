@@ -36,7 +36,8 @@ module.exports = {
       if (Array.isArray(embedding) && embedding.length) {
         const embeddings = db.embeddings.getKey(guild) || [];
         embeddings.push({
-          fact,
+          name: interaction.member?.user.username || 'Unknown',
+          content: fact,
           vector: embedding,
         });
         db.embeddings.setKey(guild, embeddings);

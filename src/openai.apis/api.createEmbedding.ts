@@ -5,14 +5,24 @@ import { OpenAIApi } from 'openai';
 /**
  * Execute embedding.
  */
-export const executeEmbedding = async (openai: OpenAIApi, input: string) =>
-  openai
+export const executeEmbedding = async (
+  openai: OpenAIApi,
+  input: string
+): Promise<number[]> => {
+  let vector: number[] = [];
+  if (config.openai.maxMemoryRequestsInMinute <= 0) return vector;
+  await openai
     .createEmbedding({
       model: config.openai.embeddingModel,
       input,
     })
-    .then((response) => response?.data?.data[0]?.embedding ?? [])
+    .then((response) => {
+      if (response?.data?.data[0]?.embedding) {
+        vector = response.data.data[0].embedding;
+      }
+    })
     .catch((error) => {
       print(error);
-      return;
     });
+  return vector;
+};

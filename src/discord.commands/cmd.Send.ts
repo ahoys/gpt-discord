@@ -8,6 +8,7 @@ import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { getSystemMessage } from '../utilities/utilities.system';
+import { getMemoryMessages } from '../utilities/utilities.shortTermMemory';
 
 const name = 'send';
 
@@ -46,13 +47,19 @@ module.exports = {
     ) {
       const dbId = getId(guild, channel.id);
       // Generate a context.
-      const messages: CreateChatCompletionRequest['messages'] = [];
+      const messages: CreateChatCompletionRequest['messages'] =
+        await getMemoryMessages(openai, db, prompt);
       messages.push({
         role: 'user',
         content: prompt,
       });
       if (!messages.length) return;
-      const system = await getSystemMessage(discord, openai, db, dbId);
+      const system = await getSystemMessage(
+        discord,
+        db,
+        dbId,
+        messages.length > 1
+      );
       if (system) messages.unshift(system);
       // Send request to OpenAI.
       executeChatCompletion(openai, {

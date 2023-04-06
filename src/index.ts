@@ -31,7 +31,8 @@ const db: IDatabase = {
   shortMemory: [],
   embeddings: jsonscribe<
     {
-      fact: string;
+      name: string;
+      content: string;
       vector: number[];
     }[]
   >({

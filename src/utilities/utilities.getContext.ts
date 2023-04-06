@@ -12,7 +12,8 @@ import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 export const getContext = async (
   openai: OpenAIApi,
   embeddings: {
-    fact: string;
+    name: string;
+    content: string;
     vector: number[];
   }[],
   query: string | number[]
@@ -31,8 +32,8 @@ export const getContext = async (
         similarity = value;
       }
     }
-    if (smallest >= 0 && typeof embeddings[smallest]?.fact === 'string') {
-      return `Answer to Question with Context: ${embeddings[smallest]?.fact}`;
+    if (smallest >= 0 && typeof embeddings[smallest]?.content === 'string') {
+      return `Answer to Question with Context: ${embeddings[smallest]?.content}`;
     }
   }
   return 'Answer that you do not know the answer.';

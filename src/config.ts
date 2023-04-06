@@ -37,16 +37,6 @@ const development: typeof production = {
   isDevelopment: true,
   openai: {
     ...production.openai,
-    tune: {
-      appendMemoryToContext:
-        process.env.OPENAI_TUNE_APPENDMEMORYTOCONTEXT !== 'false',
-      appendStepsToImproveMath:
-        process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
-      appendUsernameToSystem:
-        process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM !== 'false',
-      useDynamicTemperature:
-        process.env.OPENAI_TUNE_USEDYNAMICTEMPERATURE !== 'false',
-    },
   },
 };
 
