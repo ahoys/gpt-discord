@@ -6,7 +6,6 @@ import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
-import { getSystemMessage } from '../utilities/utilities.system';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 
 const name = 'send';
@@ -47,11 +46,15 @@ module.exports = {
       const dbId = getId(guild, channel.id);
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
-      const system = await getSystemMessage(discord, openai, db, dbId);
-      if (system) {
-        messages.push(system);
-      }
+      messages.push({
+        role: 'user',
+        content: prompt,
+      });
       if (!messages.length) return;
+      messages.unshift({
+        role: 'system',
+        content: 'Follow user given instructions to send a message.',
+      });
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,

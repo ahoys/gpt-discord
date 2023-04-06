@@ -42,11 +42,6 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
-      const system = await getSystemMessage(client, openai, db, dbId, message);
-      putToShortTermMemory(openai, db, message, client.user?.username);
-      if (system) {
-        messages.push(system);
-      }
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
         if (msg) messages.push(msg);
@@ -60,6 +55,11 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         if (msg) messages.push(msg);
       }
       if (!messages.length) return;
+      const system = await getSystemMessage(client, openai, db, dbId, message);
+      putToShortTermMemory(openai, db, message, client.user?.username);
+      if (system) {
+        messages.unshift(system);
+      }
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
