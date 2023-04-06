@@ -20,21 +20,27 @@ export const splitString = (str: string, max = 2000): string[] => {
 
 /**
  * Get a message for the messages array.
- * @param {IDiscordClient} client Discord client.
+ * @param {IDiscordClient} discordClient Discord client.
  * @param {Message} message Discord message.
  * @returns {ChatCompletionRequestMessage} Message for the messages array.
  */
 export const getMessageForMessages = (
-  client: IDiscordClient,
+  discordClient: IDiscordClient,
   message: Message
 ): ChatCompletionRequestMessage | undefined => {
-  if (!client || !message?.author) return;
+  if (!discordClient || !message?.author) return;
   const messageContent = message.cleanContent ?? message.content;
   if (!messageContent || messageContent.trim().length <= 0) return;
   let role: ChatCompletionRequestMessage['role'] =
-    message.author?.id === client.user?.id ? 'assistant' : 'user';
+    message.author?.id === discordClient.user?.id ? 'assistant' : 'user';
   let content: ChatCompletionRequestMessage['content'] = messageContent;
   let name: ChatCompletionRequestMessage['name'] = message.author?.username;
+  if (role === 'user') {
+    if (content.startsWith(`@${discordClient.user?.username} `)) {
+      content = content.replace(`@${discordClient.user?.username} `, '');
+    }
+    content = `<${message.author.username}> ${content}`;
+  }
   if (content.length > config.discord.maxContentLength) {
     content = content.substring(0, config.discord.maxContentLength);
   }

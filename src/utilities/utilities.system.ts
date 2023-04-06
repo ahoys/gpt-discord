@@ -32,7 +32,7 @@ export const getSystemMessage = async (
   // Add the bot's username so that the bot would under when he's mentioned.
   const username = discordClient.user?.username;
   if (username) {
-    str = addToStr(str, `Your identification is @${username}.`);
+    str = addToStr(str, `Your nickname is @${username}. You are in Discord.`);
   }
   // Add prompt that improves math.
   if (config.openai.improvedMath)
