@@ -80,7 +80,7 @@ export const putToShortTermMemory = async (
   }, 60 * 1000);
   await executeEmbedding(openai, content).then((vector) => {
     if (Array.isArray(vector)) {
-      if (db.shortMemory.length >= 32) {
+      if (db.shortMemory.length >= 64) {
         db.shortMemory.shift();
       }
       db.shortMemory.push({

@@ -47,8 +47,9 @@ module.exports = {
     ) {
       const dbId = getId(guild, channel.id);
       // Generate a context.
-      const messages: CreateChatCompletionRequest['messages'] =
-        await getMemoryMessages(openai, db, prompt);
+      let messages: CreateChatCompletionRequest['messages'] = [];
+      const memory = await getMemoryMessages(openai, db, prompt);
+      messages = messages.concat(memory);
       messages.push({
         role: 'user',
         content: prompt,
@@ -64,7 +65,7 @@ module.exports = {
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
-        temperature: getDynamicTemperature(db, dbId),
+        temperature: getDynamicTemperature(db, dbId, memory.length > 1),
         messages,
       })
         .then(async (response) => {

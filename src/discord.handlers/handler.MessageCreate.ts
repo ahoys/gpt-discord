@@ -44,8 +44,9 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         : undefined;
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
-      const messages: CreateChatCompletionRequest['messages'] =
-        await getMemoryMessages(openai, db, message.content);
+      let messages: CreateChatCompletionRequest['messages'] = [];
+      const memory = await getMemoryMessages(openai, db, message.content);
+      messages = messages.concat(memory);
       if (firstReference) {
         const msg = getMessageForMessages(client, firstReference);
         if (msg) messages.push(msg);
@@ -63,14 +64,19 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
         client,
         db,
         dbId,
-        messages.length > 1
+        memory.length > 1
       );
       if (system) messages.unshift(system);
       putToShortTermMemory(openai, db, message, client.user?.username);
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
-        temperature: getDynamicTemperature(db, dbId, message),
+        temperature: getDynamicTemperature(
+          db,
+          dbId,
+          memory.length > 1,
+          message
+        ),
         messages,
       }).then(async (response) => {
         const content = response.data.choices[0].message?.content;

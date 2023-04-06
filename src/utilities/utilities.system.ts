@@ -26,9 +26,13 @@ export const getSystemMessage = async (
   const storedSystem =
     db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
   if (storedSystem) str = addToStr(str, storedSystem);
+  // Reinforce answering based on the context.
   if (useContext) {
-    str += 'Answer using the previous user messages as a context.';
-    return;
+    str = addToStr(
+      str,
+      'Answer using the user messages as a context. Answer using the user language if applicable.'
+    );
+    return { role: 'system', content: str.trim() };
   }
   // Add the bot's username so that the bot would understand when he's mentioned.
   if (config.openai.tune.appendUsernameToSystem) {
