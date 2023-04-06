@@ -57,9 +57,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       if (!messages.length) return;
       const system = await getSystemMessage(client, openai, db, dbId, message);
       putToShortTermMemory(openai, db, message, client.user?.username);
-      if (system) {
-        messages.unshift(system);
-      }
+      if (system) messages.unshift(system);
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,

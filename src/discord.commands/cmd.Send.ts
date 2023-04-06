@@ -7,6 +7,7 @@ import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
+import { getSystemMessage } from '../utilities/utilities.system';
 
 const name = 'send';
 
@@ -51,10 +52,8 @@ module.exports = {
         content: prompt,
       });
       if (!messages.length) return;
-      messages.unshift({
-        role: 'system',
-        content: 'Follow user given instructions to send a message.',
-      });
+      const system = await getSystemMessage(discord, openai, db, dbId);
+      if (system) messages.unshift(system);
       // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
