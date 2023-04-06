@@ -41,7 +41,7 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       const dbId = getId(guild?.id, channel.id);
       // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
-      const system = await getSystemMessage(openai, db, dbId, message);
+      const system = await getSystemMessage(client, openai, db, dbId, message);
       putToShortTermMemory(openai, db, message, client.user?.username);
       if (system) {
         messages.push(system);
