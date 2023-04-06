@@ -15,7 +15,7 @@ const production = {
       appendMemoryToContext:
         process.env.OPENAI_TUNE_APPENDMEMORYTOCONTEXT !== 'false',
       appendStepsToImproveMath:
-        process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
+        process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH === 'true',
       appendUsernameToSystem:
         process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM === 'true',
       useDynamicTemperature:
