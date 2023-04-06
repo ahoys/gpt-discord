@@ -30,14 +30,14 @@ export const getFromShortTermMemory = async (
         if (value > similarity && value > 0.8) {
           smallest = i;
           similarity = value;
+          if (typeof db.shortMemory[i].fact === 'string') {
+            memory = db.shortMemory[i].fact;
+          }
         }
-      }
-      if (typeof db.shortMemory[smallest]?.fact === 'string') {
-        memory = db.shortMemory[smallest]?.fact;
       }
     }
   });
-  return memory;
+  return memory.trim();
 };
 
 let requestCount = 0;

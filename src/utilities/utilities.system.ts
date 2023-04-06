@@ -40,7 +40,7 @@ export const getSystemMessage = async (
   // Add prompt that improves context.
   if (config.openai.tune.appendMemoryToContext && message) {
     const fact = await getFromShortTermMemory(openai, db, message);
-    if (fact) addToStr(str, `Use Context: ${fact} ###`);
+    if (fact) str = addToStr(str, fact);
   }
   // Return only if there's a system message to save tokens.
   return str.length ? { role: 'system', content: str.trim() } : undefined;
