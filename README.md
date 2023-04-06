@@ -26,19 +26,44 @@ An Open AI powered Discord bot with great flexibility and security.
 ### Configuration for .env
 
 ```
-OPENAI_APIKEY=OpenAI application key.
-OPENAI_DEFAULTSYSTEM=With a one sentence describe the bot. (optional).
-OPENAI_DEFAULTMODEL=See OpenAPI reference manual (#model).
-OPENAI_DEFAULTTEMPERATURE=See OpenAPI reference manual (#temperature).
-OPENAI_MAXTOKENS=How many tokens can a singular request cost?
-OPENAI_EMBEDDINGMODEL=Model to be used with embedding (text-embedding-ada-002).
-OPENAI_MAXMEMORYREQUESTSINMINUTE=How often can the short term memory be updated. Set 0 to disable.
-DISCORD_APPID=Discord application key.
-DISCORD_TOKEN=Discord Bot token.
-DISCORD_ROLEID=Discord role with permissions to commands.
-DISCORD_MAXCONTENTLENGTH=How long can the user input be.
-DISCORD_IGNORECOMMANDS=List of command names that should not be available.
-DISCORD_CUSTOMCOMMANDSDIR=Your unofficial custom commands folder.
+# OpenAI application key.
+OPENAI_APIKEY=
+
+# With a one sentence give the bot identity, if you want.
+OPENAI_DEFAULTSYSTEM=
+
+# See OpenAPI reference manual (#model).
+OPENAI_DEFAULTMODEL=
+
+# See OpenAPI reference manual (#temperature).
+OPENAI_DEFAULTTEMPERATURE=
+
+# How many tokens can a singular request cost?
+OPENAI_MAXTOKENS=
+
+# Model to be used with embedding (memory).
+OPENAI_EMBEDDINGMODEL=
+
+# How often can the short term memory be updated.
+OPENAI_MAXMEMORYREQUESTSINMINUTE=
+
+# Discord application key.
+DISCORD_APPID=
+
+# Discord Bot token.
+DISCORD_TOKEN=
+
+# Discord role with permissions to bot's interactions.
+DISCORD_ROLEID=
+
+# How long can the user input be. Don't go over 2000.
+DISCORD_MAXCONTENTLENGTH=
+
+# List of command names that should _not_ be available.
+DISCORD_IGNORECOMMANDS=
+
+# Your unofficial custom commands folder, if any.
+DISCORD_CUSTOMCOMMANDSDIR=
 ```
 
 [You can read the default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
