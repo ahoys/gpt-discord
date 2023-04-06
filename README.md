@@ -31,7 +31,6 @@ OPENAI_DEFAULTSYSTEM=With a one sentence describe the bot. (optional).
 OPENAI_DEFAULTMODEL=See OpenAPI reference manual (#model).
 OPENAI_DEFAULTTEMPERATURE=See OpenAPI reference manual (#temperature).
 OPENAI_MAXTOKENS=How many tokens can a singular request cost?
-OPENAI_IMPROVEDMATH=Makes the model more precise with math (default=false).
 OPENAI_EMBEDDINGMODEL=Model to be used with embedding (text-embedding-ada-002).
 OPENAI_MAXMEMORYREQUESTSINMINUTE=How often can the short term memory be updated. Set 0 to disable.
 DISCORD_APPID=Discord application key.
@@ -45,6 +44,19 @@ DISCORD_CUSTOMCOMMANDSDIR=Your unofficial custom commands folder.
 [You can read default values from the config-file.](https://github.com/ahoys/gpt-discord/blob/main/src/config.ts)
 
 [OpenAI reference manual](https://platform.openai.com/docs/api-reference/completions/create)
+
+## Tuning
+
+The following commands expand the bot over basic capabilities but may also cause unwanted behaviour. Use `.env` to control tuning.
+
+```
+# Enables experimental multilevel memory for the bot.
+OPENAI_TUNE_APPENDMEMORYTOCONTEXT
+# Improves math capabilities by encouraging steps on a system level.
+OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH=true
+# The bot will become aware of the Discord username.
+OPENAI_TUNE_APPENDUSERNAMETOSYSTEM=true
+```
 
 ## Inviting the bot
 

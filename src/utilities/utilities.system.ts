@@ -22,24 +22,26 @@ export const getSystemMessage = async (
   openai: OpenAIApi,
   db: IDatabase,
   dbId: string,
-  message: Message
+  message?: Message
 ): Promise<ChatCompletionRequestMessage | void> => {
   let str = '';
   // Add the default or user-defined system message.
   const storedSystem =
     db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
   if (storedSystem) str = addToStr(str, storedSystem);
-  // Add the bot's username so that the bot would under when he's mentioned.
-  const username = discordClient.user?.username;
-  if (username) {
-    str = addToStr(str, `Your nickname is @${username}. You are in Discord.`);
+  // Add the bot's username so that the bot would understand when he's mentioned.
+  if (config.openai.tune.appendUsernameToSystem) {
+    const username = discordClient.user?.username;
+    str = addToStr(str, `Your nickname is @${username}.`);
   }
   // Add prompt that improves math.
-  if (config.openai.improvedMath)
+  if (config.openai.tune.appendStepsToImproveMath)
     str = addToStr(str, `Use steps if applicable.`);
   // Add prompt that improves context.
-  const fact = await getFromShortTermMemory(openai, db, message);
-  if (fact) addToStr(str, `Use Context: ${fact} ###`);
+  if (config.openai.tune.appendMemoryToContext && message) {
+    const fact = await getFromShortTermMemory(openai, db, message);
+    if (fact) addToStr(str, `Use Context: ${fact} ###`);
+  }
   // Return only if there's a system message to save tokens.
   return str.length ? { role: 'system', content: str.trim() } : undefined;
 };

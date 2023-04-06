@@ -39,7 +39,6 @@ export const getMessageForMessages = (
     if (content.startsWith(`@${discordClient.user?.username} `)) {
       content = content.replace(`@${discordClient.user?.username} `, '');
     }
-    content = `<${message.author.username}> ${content}`;
   }
   if (content.length > config.discord.maxContentLength) {
     content = content.substring(0, config.discord.maxContentLength);

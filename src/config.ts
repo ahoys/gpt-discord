@@ -11,6 +11,14 @@ const production = {
       process.env.OPENAI_EMBEDDINGMODEL || 'text-embedding-ada-002',
     maxMemoryRequestsInMinute:
       Number(process.env.OPENAI_MAXMEMORYREQUESTSINMINUTE) || 30,
+    tune: {
+      appendMemoryToContext:
+        process.env.OPENAI_TUNE_APPENDMEMORYTOCONTEXT !== 'false',
+      appendStepsToImproveMath:
+        process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
+      appendUsernameToSystem:
+        process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM === 'true',
+    },
   },
   discord: {
     appId: process.env.DISCORD_APPID,
@@ -22,9 +30,20 @@ const production = {
   },
 };
 
-const development = {
+const development: typeof production = {
   ...production,
   isDevelopment: true,
+  openai: {
+    ...production.openai,
+    tune: {
+      appendMemoryToContext:
+        process.env.OPENAI_TUNE_APPENDMEMORYTOCONTEXT !== 'false',
+      appendStepsToImproveMath:
+        process.env.OPENAI_TUNE_APPENDSTEPSTOIMPROVEMATH !== 'false',
+      appendUsernameToSystem:
+        process.env.OPENAI_TUNE_APPENDUSERNAMETOSYSTEM !== 'false',
+    },
+  },
 };
 
 export default process.env.NODE_ENV === 'production' ? production : development;

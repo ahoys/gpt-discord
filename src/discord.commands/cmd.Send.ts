@@ -6,6 +6,7 @@ import { ChannelType } from 'discord.js';
 import { ICmdProps } from '../types';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { CreateChatCompletionRequest } from 'openai';
+import { getSystemMessage } from '../utilities/utilities.system';
 
 const name = 'send';
 
@@ -43,20 +44,14 @@ module.exports = {
       prompt.trim().length
     ) {
       const dbId = getId(guild, channel.id);
+      // Generate a context.
       const messages: CreateChatCompletionRequest['messages'] = [];
-      const storedSystem =
-        db.systems.getKey(dbId) ?? config.openai.defaultSystem ?? '';
-      const mathExtension = config.openai.improvedMath
-        ? ' Use steps if applicable.'
-        : '';
-      messages.push({
-        role: 'system',
-        content: (storedSystem + mathExtension).trim(),
-      });
-      messages.push({
-        role: 'user',
-        content: prompt,
-      });
+      const system = await getSystemMessage(discord, openai, db, dbId);
+      if (system) {
+        messages.push(system);
+      }
+      if (!messages.length) return;
+      // Send request to OpenAI.
       executeChatCompletion(openai, {
         model: db.models.getKey(dbId) ?? config.openai.defaultModel,
         temperature:
