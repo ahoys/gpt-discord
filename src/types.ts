@@ -7,10 +7,21 @@ export interface IDiscordClient extends DiscordJs {
   commands: Collection<string, any>;
 }
 
+/**
+ * Memory object.
+ *
+ * Used to store information about a singular memory.
+ */
 export interface IMemoryObject {
-  name: string;
-  content: string;
-  vector: number[];
+  id: number; // Unique identifier for the memory object.
+  author: string; // Author of the memory.
+  content: string; // String content of the memory.
+  vector: number[]; // Vector representation of the memory.
+  weight: {
+    createdTimestamp: number; // Timestamp of when the memory object was created.
+    recalledTimestamp: number; // Timestamp of when the memory object was last recalled.
+    recalledCount: number; // Number of times the memory object has been recalled.
+  };
 }
 
 export interface IDatabase {
