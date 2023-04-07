@@ -1,6 +1,7 @@
 import config from '../../config';
 import compute_cosine_similarity from 'compute-cosine-similarity';
 import { IMemoryObject } from '../../types';
+import { getFreshnessAdjustedSimilarity } from './memory.fnc.getFreshnessAdjustedSimilarity';
 
 export interface IWeightedMemory {
   similarity: number;
@@ -43,7 +44,10 @@ export const getMemoriesByVectorSimilarity = (
       }
       if (similarity >= options.threshold) {
         foundMemories.push({
-          similarity,
+          similarity: getFreshnessAdjustedSimilarity(
+            similarity,
+            memories[i].meta.recalledTimestamp
+          ),
           memory: memories[i],
         });
       }
