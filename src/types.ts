@@ -1,7 +1,7 @@
 import { JSONScribeFile } from 'jsonscribe';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Client as DiscordJs, Collection } from 'discord.js';
-import { OpenAIApi } from 'openai';
+import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
 
 export interface IDiscordClient extends DiscordJs {
   commands: Collection<string, any>;
@@ -18,12 +18,9 @@ export interface IMemoryObject {
     createdTimestamp: number; // Timestamp of when the memory object was created.
     recalledTimestamp: number; // Timestamp of when the memory object was last recalled.
     recalledCount: number; // Number of times the memory object has been recalled.
-  };
-  data: {
-    author: string; // Author of the memory.
-    content: string; // String content of the memory.
     vector: number[]; // Vector representation of the memory.
   };
+  message: ChatCompletionRequestMessage;
 }
 
 export interface IDatabase {

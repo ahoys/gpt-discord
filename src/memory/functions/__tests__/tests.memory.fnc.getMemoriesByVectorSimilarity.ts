@@ -7,33 +7,40 @@ describe('getMemoriesByVectorSimilarity', () => {
     recalledTimestamp: 0,
     recalledCount: 0,
   };
+  const message = { role: 'user', name: '', content: 'Memory 1' };
   const memories: IMemoryObject[] = [
     {
       id: 0,
       meta,
       data: {
-        author: '',
+        name: '',
+        role: 'user',
         vector: [1, 2, 3],
         content: 'Memory 1',
       },
+      message,
     },
     {
       id: 1,
       meta,
       data: {
-        author: '',
+        name: '',
+        role: 'user',
         vector: [4, 5, 6],
         content: 'Memory 2',
       },
+      message,
     },
     {
       id: 2,
       meta,
       data: {
-        author: '',
+        name: '',
+        role: 'user',
         vector: [7, 8, 9],
         content: 'Memory 3',
       },
+      message,
     },
   ];
 
