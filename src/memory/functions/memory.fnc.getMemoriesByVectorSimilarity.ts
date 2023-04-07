@@ -30,7 +30,7 @@ export const getMemoriesByVectorSimilarity = (
     // Find all memories that are similar enough.
     for (let i = 0; i < memories.length; i++) {
       const similarity = compute_cosine_similarity(
-        memories[i].data.vector,
+        memories[i].meta.vector,
         vector
       );
       if (config.isDevelopment) {
@@ -38,7 +38,7 @@ export const getMemoriesByVectorSimilarity = (
           'Memory:',
           similarity,
           similarity >= options.threshold,
-          memories[i].data.content
+          memories[i].message.content
         );
       }
       if (similarity >= options.threshold) {

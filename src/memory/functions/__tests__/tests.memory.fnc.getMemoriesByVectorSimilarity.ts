@@ -6,41 +6,44 @@ describe('getMemoriesByVectorSimilarity', () => {
     createdTimestamp: 0,
     recalledTimestamp: 0,
     recalledCount: 0,
+    vector: [0, 0, 0],
   };
-  const message = { role: 'user', name: '', content: 'Memory 1' };
   const memories: IMemoryObject[] = [
     {
       id: 0,
-      meta,
-      data: {
+      meta: {
+        ...meta,
+        vector: [1, 2, 3],
+      },
+      message: {
         name: '',
         role: 'user',
-        vector: [1, 2, 3],
         content: 'Memory 1',
       },
-      message,
     },
     {
       id: 1,
-      meta,
-      data: {
+      meta: {
+        ...meta,
+        vector: [4, 5, 6],
+      },
+      message: {
         name: '',
         role: 'user',
-        vector: [4, 5, 6],
         content: 'Memory 2',
       },
-      message,
     },
     {
       id: 2,
-      meta,
-      data: {
+      meta: {
+        ...meta,
+        vector: [7, 8, 9],
+      },
+      message: {
         name: '',
         role: 'user',
-        vector: [7, 8, 9],
         content: 'Memory 3',
       },
-      message,
     },
   ];
 
@@ -57,7 +60,7 @@ describe('getMemoriesByVectorSimilarity', () => {
   it('returns the correct memories when some memories are similar enough', () => {
     const result = getMemoriesByVectorSimilarity(
       memories,
-      memories[0].data.vector,
+      memories[0].meta.vector,
       {
         threshold: 0.99,
         maximum: 3,
@@ -69,7 +72,7 @@ describe('getMemoriesByVectorSimilarity', () => {
   it('returns the memories in reversed order of similarity', () => {
     const result = getMemoriesByVectorSimilarity(
       memories,
-      memories[1].data.vector,
+      memories[1].meta.vector,
       {
         threshold: 0.99,
         maximum: 3,
@@ -91,7 +94,7 @@ describe('getMemoriesByVectorSimilarity', () => {
   it('returns the top X memories when there are more than X similar memories', () => {
     const result = getMemoriesByVectorSimilarity(
       memories,
-      memories[2].data.vector,
+      memories[2].meta.vector,
       {
         threshold: 0.99,
         maximum: 2,
