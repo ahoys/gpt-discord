@@ -1,5 +1,5 @@
-import { IMemoryObject } from '../../types';
+import { IWeightedMemory } from './memory.fnc.getMemoriesByVectorSimilarity';
 
-export const getFreshness = (meta: IMemoryObject['meta']): number => {
+export const getFreshness = (weightedMemory: IWeightedMemory): number => {
   return 0;
 };

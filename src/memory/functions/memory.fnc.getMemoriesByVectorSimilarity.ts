@@ -2,7 +2,7 @@ import config from '../../config';
 import compute_cosine_similarity from 'compute-cosine-similarity';
 import { IMemoryObject } from '../../types';
 
-interface IMemoryWeight {
+export interface IWeightedMemory {
   similarity: number;
   memory: IMemoryObject;
 }
@@ -24,8 +24,8 @@ export const getMemoriesByVectorSimilarity = (
     threshold: 0.82,
     maximum: 8,
   }
-): IMemoryWeight[] => {
-  const foundMemories: IMemoryWeight[] = [];
+): IWeightedMemory[] => {
+  const foundMemories: IWeightedMemory[] = [];
   if (Array.isArray(memories && vector)) {
     // Find all memories that are similar enough.
     for (let i = 0; i < memories.length; i++) {
