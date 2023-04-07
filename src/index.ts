@@ -8,7 +8,7 @@ import jsonscribe from 'jsonscribe';
 import { Client as DiscordJs, GatewayIntentBits, Collection } from 'discord.js';
 import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
-import { IDatabase, IDiscordClient } from './types';
+import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
 
 print(config);
@@ -29,13 +29,7 @@ const db: IDatabase = {
     path: path.join(__dirname, '..', 'db', 'temperatures.json'),
   }),
   shortMemory: [],
-  embeddings: jsonscribe<
-    {
-      name: string;
-      content: string;
-      vector: number[];
-    }[]
-  >({
+  embeddings: jsonscribe<IMemoryObject[]>({
     path: path.join(__dirname, '..', 'db', 'embeddings.json'),
   }),
 };

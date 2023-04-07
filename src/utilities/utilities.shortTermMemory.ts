@@ -23,24 +23,24 @@ const getFromShortTermMemory = async (
       memory: IMemoryObject;
     }[] = [];
     for (let i = 0; i < db.shortMemory.length; i++) {
-      const similarity = compute_cosine_similarity(
-        db.shortMemory[i].vector,
-        vector
-      );
-      if (config.isDevelopment) {
-        console.log(
-          'Memory:',
-          similarity,
-          similarity >= MEMORY_THRESHOLD,
-          db.shortMemory[i].content
-        );
-      }
-      if (similarity >= MEMORY_THRESHOLD) {
-        memories.push({
-          similarity,
-          memory: db.shortMemory[i],
-        });
-      }
+      // const similarity = compute_cosine_similarity(
+      //   db.shortMemory[i].vector,
+      //   vector
+      // );
+      // if (config.isDevelopment) {
+      //   console.log(
+      //     'Memory:',
+      //     similarity,
+      //     similarity >= MEMORY_THRESHOLD,
+      //     db.shortMemory[i].content
+      //   );
+      // }
+      // if (similarity >= MEMORY_THRESHOLD) {
+      //   memories.push({
+      //     similarity,
+      //     memory: db.shortMemory[i],
+      //   });
+      // }
     }
     memories.sort((a, b) => a.similarity - b.similarity);
     relevantMemories = memories.map((m) => m.memory);
@@ -83,11 +83,11 @@ export const putToShortTermMemory = async (
       if (db.shortMemory.length >= 64) {
         db.shortMemory.shift();
       }
-      db.shortMemory.push({
-        name: message.author.username || 'Someone',
-        content,
-        vector,
-      });
+      // db.shortMemory.push({
+      //   name: message.author.username || 'Someone',
+      //   content,
+      //   vector,
+      // });
     }
   });
 };
@@ -116,13 +116,13 @@ export const getMemoryMessages = async (
   const memories = await getFromShortTermMemory(openai, db, content);
   let totalLen = 0;
   for (const memory of memories) {
-    if (totalLen + memory.content.length > 512) break;
-    totalLen += memory.content.length;
-    memoryMessages.push({
-      role: 'user',
-      name: memory.name,
-      content: memory.content,
-    });
+    // if (totalLen + memory.content.length > 512) break;
+    // totalLen += memory.content.length;
+    // memoryMessages.push({
+    //   role: 'user',
+    //   name: memory.name,
+    //   content: memory.content,
+    // });
   }
   return memoryMessages;
 };

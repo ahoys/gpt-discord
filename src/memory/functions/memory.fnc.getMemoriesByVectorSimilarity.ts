@@ -1,9 +1,15 @@
-import config from '../../config';
 import compute_cosine_similarity from 'compute-cosine-similarity';
 import { IMemoryObject } from '../../types';
 
+interface IMemoryWeight {
+  similarity: number;
+  memory: IMemoryObject;
+}
+
 /**
  * Filters memories by vector similarity.
+ * The memories will be returned in order of similarity.
+ * The highest similarity will be at the beginning of the array.
  * @param memories Unfiltered memories.
  * @param vector Vector to compare against.
  * @param threshold Minimum similarity threshold.
@@ -13,30 +19,28 @@ import { IMemoryObject } from '../../types';
 export const getMemoriesByVectorSimilarity = (
   memories: IMemoryObject[],
   vector: number[],
-  threshold = 0.82,
-  maximum = 8
-): IMemoryObject[] => {
-  let relevantMemories: IMemoryObject[] = [];
+  options = {
+    threshold: 0.82,
+    maximum: 8,
+  }
+): IMemoryWeight[] => {
+  const foundMemories: IMemoryWeight[] = [];
   if (Array.isArray(memories && vector)) {
-    const foundMemories: {
-      similarity: number;
-      memory: IMemoryObject;
-    }[] = [];
     // Find all memories that are similar enough.
     for (let i = 0; i < memories.length; i++) {
       const similarity = compute_cosine_similarity(
         memories[i].data.vector,
         vector
       );
-      if (config.isDevelopment) {
-        console.log(
-          'Memory:',
-          similarity,
-          similarity >= threshold,
-          memories[i].data.content
-        );
-      }
-      if (similarity >= threshold) {
+      // if (config.isDevelopment) {
+      //   console.log(
+      //     'Memory:',
+      //     similarity,
+      //     similarity >= threshold,
+      //     memories[i].data.content
+      //   );
+      // }
+      if (similarity >= options.threshold) {
         foundMemories.push({
           similarity,
           memory: memories[i],
@@ -45,9 +49,9 @@ export const getMemoriesByVectorSimilarity = (
     }
     // Sort the memories by similarity.
     foundMemories.sort((a, b) => a.similarity - b.similarity);
-    relevantMemories = foundMemories.map((m) => m.memory);
   }
   // Return the top X memories.
   // We could return everything, but this is a bit more efficient.
-  return relevantMemories.slice(0, maximum);
+  console.log(foundMemories.slice(0, options.maximum));
+  return foundMemories.slice(0, options.maximum);
 };
