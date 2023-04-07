@@ -46,7 +46,8 @@ export const getMemoriesByVectorSimilarity = (
         foundMemories.push({
           similarity: getFreshnessAdjustedSimilarity(
             similarity,
-            memories[i].meta.recalledTimestamp
+            memories[i].meta.recalledTimestamp,
+            memories[i].meta.recalledCount
           ),
           memory: memories[i],
         });
