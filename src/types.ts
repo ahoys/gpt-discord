@@ -14,13 +14,15 @@ export interface IDiscordClient extends DiscordJs {
  */
 export interface IMemoryObject {
   id: number; // Unique identifier for the memory object.
-  author: string; // Author of the memory.
-  content: string; // String content of the memory.
-  vector: number[]; // Vector representation of the memory.
-  weight: {
+  meta: {
     createdTimestamp: number; // Timestamp of when the memory object was created.
     recalledTimestamp: number; // Timestamp of when the memory object was last recalled.
     recalledCount: number; // Number of times the memory object has been recalled.
+  };
+  data: {
+    author: string; // Author of the memory.
+    content: string; // String content of the memory.
+    vector: number[]; // Vector representation of the memory.
   };
 }
 
