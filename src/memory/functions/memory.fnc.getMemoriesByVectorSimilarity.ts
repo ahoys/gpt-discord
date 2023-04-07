@@ -1,3 +1,4 @@
+import config from '../../config';
 import compute_cosine_similarity from 'compute-cosine-similarity';
 import { IMemoryObject } from '../../types';
 
@@ -32,14 +33,14 @@ export const getMemoriesByVectorSimilarity = (
         memories[i].data.vector,
         vector
       );
-      // if (config.isDevelopment) {
-      //   console.log(
-      //     'Memory:',
-      //     similarity,
-      //     similarity >= threshold,
-      //     memories[i].data.content
-      //   );
-      // }
+      if (config.isDevelopment) {
+        console.log(
+          'Memory:',
+          similarity,
+          similarity >= options.threshold,
+          memories[i].data.content
+        );
+      }
       if (similarity >= options.threshold) {
         foundMemories.push({
           similarity,
@@ -52,6 +53,5 @@ export const getMemoriesByVectorSimilarity = (
   }
   // Return the top X memories.
   // We could return everything, but this is a bit more efficient.
-  console.log(foundMemories.slice(0, options.maximum));
   return foundMemories.slice(0, options.maximum);
 };
