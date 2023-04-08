@@ -2,6 +2,9 @@ import config from '../config';
 import { Collection } from 'chromadb';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
+import { ChatCompletionRequestMessage } from 'openai';
+
+const DISTANCE_THRESHOLD = 0.26;
 
 // Initialize ChromaDB.
 if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
@@ -67,7 +70,6 @@ export const addToMemory = async (
       }
     }
     if (acceptedIds.length < 1) return;
-    console.log('addToMemory', { acceptedContents });
     await memory.add(acceptedIds, undefined, acceptedMetas, acceptedContents);
   } catch (error) {
     print(error);
@@ -80,36 +82,35 @@ export const addToMemory = async (
 export const getFromMemory = async (
   collectionId: string,
   contents: string | string[]
-): Promise<
-  | {
-      ids: string[];
-      documents: string[];
-      metas: IMeta[];
-    }
-  | undefined
-> => {
+): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     const memory = await getCollection(collectionId);
     if (!memory) return undefined;
-    const memories = await memory.query(
-      undefined,
-      undefined,
-      undefined,
-      contents
-    );
-    console.log('getFromMemory', { collectionId, memories, contents });
+    const memories = await memory.query(undefined, 2, undefined, contents);
+    // console.log('getFromMemory', { collectionId, memories, contents });
     if (
       memories &&
       !memories.error &&
-      Array.isArray(memories.ids) &&
-      Array.isArray(memories.documents) &&
-      Array.isArray(memories.metadatas)
+      Array.isArray(memories.ids[0]) &&
+      Array.isArray(memories.documents[0]) &&
+      Array.isArray(memories.metadatas[0])
     ) {
-      return {
-        ids: memories.ids,
-        documents: memories.documents,
-        metas: memories.metadatas,
-      };
+      const messages: ChatCompletionRequestMessage[] = [];
+      for (let index = 0; index < memories.ids[0].length; index++) {
+        const role = memories.metadatas[0][index].role;
+        const name = memories.metadatas[0][index].name;
+        const content = memories.documents[0][index];
+        const distance = memories.distances[0][index];
+        console.log({ content, distance });
+        if (distance <= DISTANCE_THRESHOLD) {
+          messages.push({
+            role,
+            name,
+            content,
+          });
+        }
+      }
+      return messages;
     }
     return undefined;
   } catch (error) {

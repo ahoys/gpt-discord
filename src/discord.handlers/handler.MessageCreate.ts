@@ -87,7 +87,8 @@ const replyToMessage = async (
     }
     // Add the message that triggered the reply.
     const currentMessage = getFormedMessage(user, message, true);
-    messages.unshift(currentMessage);
+    messages.push(currentMessage);
+    let hasMemories = false;
     // Extract memories to improve the reply.
     if (config.chroma.baseName) {
       const memories = await getFromMemory(
@@ -95,14 +96,9 @@ const replyToMessage = async (
         [currentMessage.content]
       );
       if (memories) {
-        for (let index = 0; index < memories?.documents.length; index++) {
-          const memoryContent = memories.documents[index];
-          const memoryMeta = memories.metas[index];
-          messages.unshift({
-            role: memoryMeta.role,
-            name: memoryMeta.name,
-            content: memoryContent,
-          });
+        hasMemories = true;
+        for (const memory of memories) {
+          messages.unshift(memory);
         }
       }
     }
@@ -110,11 +106,18 @@ const replyToMessage = async (
     // Finally, add the system message.
     const dbId = getId((message.guild as Guild).id, message.channel.id);
     const guildSystem = db.systems.getKey(dbId);
-    if (guildSystem || config.openai.defaultSystem) {
+    if (guildSystem || config.openai.defaultSystem || hasMemories) {
+      const memoryHelper = hasMemories
+        ? 'Use previous messages as a context. '
+        : '';
       messages.unshift({
         role: 'system',
         name: user.username,
-        content: guildSystem || (config.openai.defaultSystem as string),
+        content: (
+          memoryHelper + guildSystem || (config.openai.defaultSystem as string)
+        )
+          .trim()
+          .substring(0, 512),
       });
     }
     // Define configuration for the chat completion.
