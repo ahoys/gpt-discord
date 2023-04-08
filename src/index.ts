@@ -10,7 +10,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
-import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
+import { initMemory } from './memory/memory';
 
 print(config);
 
@@ -38,12 +38,6 @@ const openai = new OpenAIApi(
     apiKey: config.openai.apiKey,
   })
 );
-
-/**
- * The ChromaDB client.
- */
-const chroma = new ChromaClient();
-const embedder = new OpenAIEmbeddingFunction(config.openai.apiKey);
 
 const bootstrap = async () => {
   // The database, which is basically
@@ -82,17 +76,13 @@ const bootstrap = async () => {
     );
   }
 
-  // Initialize the ChromaDB collection.
-  const chromaCollection = await chroma.createCollection(
-    config.chroma.collection,
-    {},
-    embedder
-  );
+  // Initialize memory.
+  await initMemory();
 
   // Register handlers.
   DiscordReady(discord);
   DiscordInteractionCreate(discord, openai, db);
-  DiscordMessageCreate(discord, openai, db, chromaCollection);
+  DiscordMessageCreate(discord, openai, db);
 
   // Login to discord. This will then trigger the Ready-handler.
   discord.login(config.discord.token);
