@@ -102,7 +102,10 @@ export const getFromMemory = async (
         const content = memories.documents[0][index];
         const distance = memories.distances[0][index];
         console.log({ content, distance });
-        if (distance <= DISTANCE_THRESHOLD) {
+        const exists = messages.find(
+          (m) => m.content.toLowerCase().trim() === content.toLowerCase().trim()
+        );
+        if (!exists && distance <= DISTANCE_THRESHOLD) {
           messages.push({
             role,
             name,

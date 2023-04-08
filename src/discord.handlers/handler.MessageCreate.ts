@@ -108,7 +108,7 @@ const replyToMessage = async (
     const guildSystem = db.systems.getKey(dbId);
     if (guildSystem || config.openai.defaultSystem || hasMemories) {
       const memoryHelper = hasMemories
-        ? 'Use previous messages as a context. '
+        ? 'Use previous messages as a memory. '
         : '';
       messages.unshift({
         role: 'system',
