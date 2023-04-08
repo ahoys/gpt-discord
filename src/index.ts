@@ -20,33 +20,6 @@ if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
 
 (process as any).noDeprecation = true;
 
-// The database, which is basically
-// a key-value store.
-const db: IDatabase = {
-  paused: false,
-  systems: jsonscribe<string>({
-    path: path.join(__dirname, '..', 'db', 'systems.json'),
-  }),
-  models: jsonscribe<string>({
-    path: path.join(__dirname, '..', 'db', 'models.json'),
-  }),
-  temperatures: jsonscribe<number>({
-    path: path.join(__dirname, '..', 'db', 'temperatures.json'),
-  }),
-  shortMemory: [],
-  embeddings: jsonscribe<IMemoryObject[]>({
-    path: path.join(__dirname, '..', 'db', 'embeddings.json'),
-  }),
-};
-
-// The OpenAI API client.
-// This is used to communicate with the OpenAI API.
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: config.openai.apiKey,
-  })
-);
-
 // The Discord API client.
 // This is used to communicate with the Discord API.
 const discord = new DiscordJs({
@@ -58,40 +31,69 @@ const discord = new DiscordJs({
   ],
 }) as IDiscordClient;
 
+// The OpenAI API client.
+// This is used to communicate with the OpenAI API.
+const openai = new OpenAIApi(
+  new Configuration({
+    apiKey: config.openai.apiKey,
+  })
+);
+
 /**
  * The ChromaDB client.
  */
 const chroma = new ChromaClient();
 const embedder = new OpenAIEmbeddingFunction(config.openai.apiKey);
 
-// Read all official commands from the commands-folder.
-discord.commands = getDynamicCommands(
-  new Collection(),
-  path.join(__dirname, 'discord.commands')
-);
-
-if (
-  config.discord.customCommandsDir &&
-  fs.existsSync(config.discord.customCommandsDir)
-) {
-  // Read all unofficial commands from the custom commands-folder.
-  discord.commands = getDynamicCommands(
-    discord.commands,
-    path.join(__dirname, '..', config.discord.customCommandsDir)
-  );
-}
-
 const bootstrap = async () => {
+  // The database, which is basically
+  // a key-value store.
+  const db: IDatabase = {
+    paused: false,
+    systems: jsonscribe<string>({
+      path: path.join(__dirname, '..', 'db', 'systems.json'),
+    }),
+    models: jsonscribe<string>({
+      path: path.join(__dirname, '..', 'db', 'models.json'),
+    }),
+    temperatures: jsonscribe<number>({
+      path: path.join(__dirname, '..', 'db', 'temperatures.json'),
+    }),
+    shortMemory: [],
+    embeddings: jsonscribe<IMemoryObject[]>({
+      path: path.join(__dirname, '..', 'db', 'embeddings.json'),
+    }),
+  };
+
+  // Read all official commands from the commands-folder.
+  discord.commands = getDynamicCommands(
+    new Collection(),
+    path.join(__dirname, 'discord.commands')
+  );
+
+  if (
+    config.discord.customCommandsDir &&
+    fs.existsSync(config.discord.customCommandsDir)
+  ) {
+    // Read all unofficial commands from the custom commands-folder.
+    discord.commands = getDynamicCommands(
+      discord.commands,
+      path.join(__dirname, '..', config.discord.customCommandsDir)
+    );
+  }
+
   // Initialize the ChromaDB collection.
   const chromaCollection = await chroma.createCollection(
     config.chroma.collection,
     {},
     embedder
   );
+
   // Register handlers.
   DiscordReady(discord);
   DiscordInteractionCreate(discord, openai, db);
   DiscordMessageCreate(discord, openai, db, chromaCollection);
+
   // Login to discord. This will then trigger the Ready-handler.
   discord.login(config.discord.token);
 };
