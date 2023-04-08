@@ -10,8 +10,13 @@ import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
+import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 
 print(config);
+
+if (!config.discord.appId) throw new Error('No Discord app ID provided.');
+if (!config.discord.token) throw new Error('No Discord token provided.');
+if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
 
 (process as any).noDeprecation = true;
 
@@ -53,6 +58,12 @@ const discord = new DiscordJs({
   ],
 }) as IDiscordClient;
 
+/**
+ * The ChromaDB client.
+ */
+const chroma = new ChromaClient();
+const embedder = new OpenAIEmbeddingFunction(config.openai.apiKey);
+
 // Read all official commands from the commands-folder.
 discord.commands = getDynamicCommands(
   new Collection(),
@@ -70,10 +81,19 @@ if (
   );
 }
 
-// Register handlers.
-DiscordReady(discord);
-DiscordInteractionCreate(discord, openai, db);
-DiscordMessageCreate(discord, openai, db);
+const bootstrap = async () => {
+  // Initialize the ChromaDB collection.
+  const chromaCollection = await chroma.createCollection(
+    config.chroma.collection,
+    {},
+    embedder
+  );
+  // Register handlers.
+  DiscordReady(discord);
+  DiscordInteractionCreate(discord, openai, db);
+  DiscordMessageCreate(discord, openai, db, chromaCollection);
+  // Login to discord. This will then trigger the Ready-handler.
+  discord.login(config.discord.token);
+};
 
-// Login to discord. This will then trigger the Ready-handler.
-discord.login(config.discord.token);
+bootstrap();

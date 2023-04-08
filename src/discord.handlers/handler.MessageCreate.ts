@@ -15,12 +15,18 @@ import {
   putToShortTermMemory,
 } from '../utilities/utilities.shortTermMemory';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
+import { Collection } from 'chromadb';
 
 /**
  * Handle incoming messages.
  * If the message mentions the bot, reply with a chat completion.
  */
-export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
+export default (
+  client: IDiscordClient,
+  openai: OpenAIApi,
+  db: IDatabase,
+  chromaCollection: Collection
+) =>
   client.on(Events.MessageCreate, async (message) => {
     try {
       const { user } = client;

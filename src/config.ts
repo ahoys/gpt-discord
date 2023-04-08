@@ -30,6 +30,9 @@ const production = {
     ignoreCommands: process.env.DISCORD_IGNORECOMMANDS?.split(',') || [],
     customCommandsDir: process.env.DISCORD_CUSTOMCOMMANDSDIR,
   },
+  chroma: {
+    collection: process.env.CHROMA_COLLECTION || 'gpt-discord',
+  },
 };
 
 const development: typeof production = {
