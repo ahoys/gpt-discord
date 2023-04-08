@@ -1,5 +1,5 @@
 import config from '../config';
-import { ClientUser, Events, Message } from 'discord.js';
+import { ClientUser, Events, Guild, Message } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import {
@@ -16,18 +16,21 @@ import {
 import { getSystemMessage } from '../utilities/utilities.system';
 import { getMemoryMessages } from '../utilities/utilities.shortTermMemory';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
-import { addToMemory } from '../memory/memory';
+import { addToMemory, getFromMemory } from '../memory/memory';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
 
 const getFormedMessage = (
   user: ClientUser,
-  message: Message
+  message: Message,
+  parse = false
 ): ChatCompletionRequestMessage => ({
   role: message.author.id === user.id ? 'assistant' : 'user',
   name: message.author.username,
-  content: message.cleanContent,
+  content: parse
+    ? message.cleanContent.replace(`@${user.username} `, '').trim()
+    : message.cleanContent,
 });
 
 /**
@@ -44,41 +47,120 @@ const getReference = async (message: Message): Promise<Message | undefined> =>
  * Use OpenAI Chat Completion to reply to a message.
  * @param message
  */
-const replyToMessage = async (user: ClientUser, message: Message) => {
-  // See if the message is a reply to another message.
-  // That another message may contain information about the context.
-  const messages: CreateChatCompletionRequest['messages'] = [];
-  let lastReference: ChatCompletionRequestMessage | undefined;
-  let totalLength = 0;
-  let safeLimit = MAX_REPLIES_TO_FETCH;
-  let previousReference: Message | undefined = await getReference(message);
-  if (previousReference) {
-    const formedMessage = getFormedMessage(user, previousReference);
-    lastReference = formedMessage;
-    messages.push(formedMessage);
-    totalLength += previousReference.content.length;
-  }
-  do {
+const replyToMessage = async (
+  openai: OpenAIApi,
+  user: ClientUser,
+  message: Message,
+  db: IDatabase
+) => {
+  try {
+    // See if the message is a reply to another message.
+    // That another message may contain information about the context.
+    const messages: CreateChatCompletionRequest['messages'] = [];
+    let lastReference: ChatCompletionRequestMessage | undefined;
+    let totalLength = 0;
+    let safeLimit = MAX_REPLIES_TO_FETCH;
+    let previousReference: Message | undefined = await getReference(message);
     if (previousReference) {
-      const reference = await getReference(previousReference);
-      previousReference = reference;
-      if (reference) {
-        const formedMessage = getFormedMessage(user, reference);
-        lastReference = formedMessage;
-        if (totalLength + formedMessage.content.length < MAX_REPLY_LENGTH) {
-          messages.unshift(formedMessage);
+      const formedMessage = getFormedMessage(user, previousReference);
+      lastReference = formedMessage;
+      messages.push(formedMessage);
+      totalLength += previousReference.content.length;
+    }
+    do {
+      if (previousReference) {
+        const reference = await getReference(previousReference);
+        previousReference = reference;
+        if (reference) {
+          const formedMessage = getFormedMessage(user, reference);
+          lastReference = formedMessage;
+          if (totalLength + formedMessage.content.length < MAX_REPLY_LENGTH) {
+            messages.unshift(formedMessage);
+          }
+        }
+      }
+      safeLimit--;
+    } while (previousReference && safeLimit > 0);
+    if (lastReference && messages[0]?.content !== lastReference.content) {
+      // The original message.
+      messages.unshift(lastReference);
+    }
+    // Add the message that triggered the reply.
+    const currentMessage = getFormedMessage(user, message, true);
+    messages.unshift(currentMessage);
+    // Extract memories to improve the reply.
+    if (config.chroma.baseName) {
+      const memories = await getFromMemory(
+        config.chroma.baseName + '-' + (message.guild as Guild).id,
+        [currentMessage.content]
+      );
+      if (memories) {
+        for (let index = 0; index < memories?.documents.length; index++) {
+          const memoryContent = memories.documents[index];
+          const memoryMeta = memories.metas[index];
+          messages.unshift({
+            role: memoryMeta.role,
+            name: memoryMeta.name,
+            content: memoryContent,
+          });
         }
       }
     }
-    safeLimit--;
-  } while (previousReference && safeLimit > 0);
-  if (lastReference && messages[0]?.content !== lastReference.content) {
-    // The original message.
-    messages.unshift(lastReference);
+    if (messages.length < 1) return;
+    // Finally, add the system message.
+    const dbId = getId((message.guild as Guild).id, message.channel.id);
+    const guildSystem = db.systems.getKey(dbId);
+    if (guildSystem || config.openai.defaultSystem) {
+      messages.unshift({
+        role: 'system',
+        name: user.username,
+        content: guildSystem || (config.openai.defaultSystem as string),
+      });
+    }
+    // Define configuration for the chat completion.
+    const model = db.models.getKey(dbId) ?? config.openai.defaultModel;
+    const temperature = getDynamicTemperature(
+      db,
+      dbId,
+      !!lastReference,
+      message
+    );
+    // Execute the chat completion.
+    await executeChatCompletion(openai, {
+      model,
+      temperature,
+      messages,
+    })
+      .then(async (response) => {
+        // Reply to the message.
+        const gptMessage = response.data.choices[0].message?.content;
+        if (gptMessage) {
+          await reply(message, gptMessage);
+          // Update memories with new claims.
+          // Do not include questions to save space.
+          if (config.chroma.baseName && !currentMessage.content.includes('?')) {
+            addToMemory(
+              config.chroma.baseName + '-' + (message.guild as Guild).id,
+              [message.id],
+              [currentMessage.content],
+              [
+                {
+                  role: 'user',
+                  name: message.author.username,
+                  temperature,
+                  created: message.createdTimestamp,
+                  channelId: message.channel.id,
+                  messageId: message.id,
+                },
+              ]
+            );
+          }
+        }
+      })
+      .catch((error) => print(error?.message || error));
+  } catch (error) {
+    print(error);
   }
-  // Finally, add the message that triggered the reply.
-  messages.push(getFormedMessage(user, message));
-  console.log(messages);
 };
 
 /**
@@ -122,66 +204,8 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       // For security reasons, only specific messages are allowed
       // to be read.
       if (messageReadingAllowed(client.user, message)) {
-        replyToMessage(client.user as ClientUser, message);
+        replyToMessage(openai, client.user as ClientUser, message, db);
       }
-      // const isReply = message.reference?.messageId !== undefined;
-      // // There's a bug in typings of fetch, which is why any is used.
-      // const reference = isReply
-      //   ? await channel.messages.fetch(message.reference?.messageId as any)
-      //   : undefined;
-      // const firstReference = reference
-      //   ? await getFirstReference(reference)
-      //   : undefined;
-      // const dbId = getId(guild?.id, channel.id);
-      // // Generate a context.
-      // let messages: CreateChatCompletionRequest['messages'] = [];
-      // const memory = await getMemoryMessages(openai, db, message.content);
-      // messages = messages.concat(memory);
-      // if (firstReference) {
-      //   const msg = getMessageForMessages(client, firstReference);
-      //   if (msg) messages.push(msg);
-      // }
-      // if (reference) {
-      //   const msg = getMessageForMessages(client, reference);
-      //   if (msg) messages.push(msg);
-      // }
-      // if (message?.author) {
-      //   const msg = getMessageForMessages(client, message);
-      //   if (msg) messages.push(msg);
-      // }
-      // if (!messages.length) return;
-      // const system = await getSystemMessage(
-      //   client,
-      //   db,
-      //   dbId,
-      //   memory.length > 1
-      // );
-      // if (system) messages.unshift(system);
-      // // Send request to OpenAI.
-      // executeChatCompletion(openai, {
-      //   model: db.models.getKey(dbId) ?? config.openai.defaultModel,
-      //   temperature: getDynamicTemperature(
-      //     db,
-      //     dbId,
-      //     memory.length > 1,
-      //     message
-      //   ),
-      //   messages,
-      // }).then(async (response) => {
-      //   const content = response.data.choices[0].message?.content;
-      //   if (content) {
-      //     await reply(message, content);
-      //     // After everything, memorize what has happened.
-      //     const now = Date.now();
-      //     addToMemory(
-      //       ['user-' + now, 'bot-' + now],
-      //       [message.cleanContent, content],
-      //       []
-      //     );
-      //   } else {
-      //     print('No response.');
-      //   }
-      // });
     } catch (error) {
       print(error);
     }

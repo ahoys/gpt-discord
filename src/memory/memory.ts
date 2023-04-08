@@ -1,85 +1,119 @@
 import config from '../config';
-import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
-import { IDatabase, IDiscordClient, IMemoryObject } from '../types';
-import { Message } from 'discord.js';
 import { Collection } from 'chromadb';
-import {
-  IWeightedMemory,
-  getMemoriesByVectorSimilarity,
-} from './functions/memory.fnc.getMemoriesByVectorSimilarity';
-import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
 
-let memory: Collection;
-
-// export const recallFromMemories = async (
-//   openai: OpenAIApi,
-//   shortMemory: IDatabase['shortMemory'],
-//   message: Message
-// ): Promise<IMemoryObject[]> => {
-//   const cleanedContent = message.cleanContent;
-//   const newVector = await executeEmbedding(openai, cleanedContent);
-//   const weightedMemories: IWeightedMemory[] = getMemoriesByVectorSimilarity(
-//     shortMemory,
-//     newVector
-//   );
-//   return [];
-// };
-
-// export const processToMemories = async (): Promise<void> => {
-//   return;
-// };
-
-// /**
-//  * Process the memory and return relevant messages.
-//  * @returns {CreateChatCompletionRequest['messages']}
-//  */
-// export const getMemoryMessages = async (
-//   discordClient: IDiscordClient,
-//   shortMemory: IDatabase['shortMemory'],
-//   chromaCollection: Collection,
-//   openai: OpenAIApi,
-//   message: Message
-// ): Promise<CreateChatCompletionRequest['messages']> => {
-//   const memories = await recallFromMemories(openai, shortMemory, message);
-//   processToMemories();
-//   return memories.map((memory) => memory.message);
-// };
+// Initialize ChromaDB.
+if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
+const chroma = new ChromaClient();
+const embedder = new OpenAIEmbeddingFunction(
+  config.openai.apiKey,
+  config.openai.embeddingModel
+);
 
 /**
- * Initialize the memory by fetching or creating a
- * Chroma collection.
+ * Returns a collection from ChromaDB.
+ * @param id The collection ID.
+ * @returns {Promise<Collection | undefined>} The collection.
  */
-export const initMemory = async (): Promise<void> => {
-  if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
-  const chroma = new ChromaClient();
-  const embedder = new OpenAIEmbeddingFunction(config.openai.apiKey);
-  memory = await chroma.getCollection(config.chroma.collection);
-  if (memory) return;
-  memory = await chroma.createCollection(
-    config.chroma.collection,
-    {},
-    embedder
-  );
+const getCollection = async (id: string): Promise<Collection | undefined> => {
+  try {
+    let memory = await chroma.getCollection(id, embedder);
+    if (memory) return memory;
+    return await chroma.createCollection(id, {}, embedder);
+  } catch (error) {
+    print(error);
+    return;
+  }
 };
+
+interface IMeta {
+  role: 'system' | 'assistant' | 'user';
+  name: string;
+  temperature: number;
+  created: number;
+  channelId: string;
+  messageId: string;
+}
 
 /**
  * Memorize messages.
  */
 export const addToMemory = async (
+  collectionId: string,
   ids: string[],
   contents: string[],
-  metas: {
-    role: string;
-    name: string;
-    temperature: number;
-  }[]
+  metas: IMeta[]
 ): Promise<void> => {
-  if (!memory) throw new Error('Memory not initialized.');
   try {
-    await memory.add(ids, undefined, metas, contents);
+    const memory = await getCollection(collectionId);
+    if (!memory) return;
+    const acceptedIds = [];
+    const acceptedContents = [];
+    const acceptedMetas = [];
+    for (let index = 0; index < contents.length; index++) {
+      const meta = metas[index];
+      if (
+        ['system', 'assistant', 'user'].includes(meta.role) &&
+        typeof meta.name === 'string' &&
+        typeof meta.temperature === 'number' &&
+        typeof meta.created === 'number' &&
+        typeof meta.channelId === 'string' &&
+        typeof meta.messageId === 'string'
+      ) {
+        acceptedIds.push(ids[index]);
+        acceptedContents.push(contents[index]);
+        acceptedMetas.push(meta);
+      }
+    }
+    if (acceptedIds.length < 1) return;
+    console.log('addToMemory', { acceptedContents });
+    await memory.add(acceptedIds, undefined, acceptedMetas, acceptedContents);
   } catch (error) {
     print(error);
+  }
+};
+
+/**
+ * Get messages from memory.
+ */
+export const getFromMemory = async (
+  collectionId: string,
+  contents: string | string[]
+): Promise<
+  | {
+      ids: string[];
+      documents: string[];
+      metas: IMeta[];
+    }
+  | undefined
+> => {
+  try {
+    const memory = await getCollection(collectionId);
+    if (!memory) return undefined;
+    const memories = await memory.query(
+      undefined,
+      undefined,
+      undefined,
+      contents
+    );
+    console.log('getFromMemory', { collectionId, memories, contents });
+    if (
+      memories &&
+      !memories.error &&
+      Array.isArray(memories.ids) &&
+      Array.isArray(memories.documents) &&
+      Array.isArray(memories.metadatas)
+    ) {
+      return {
+        ids: memories.ids,
+        documents: memories.documents,
+        metas: memories.metadatas,
+      };
+    }
+    return undefined;
+  } catch (error) {
+    print(error);
+    return undefined;
   }
 };

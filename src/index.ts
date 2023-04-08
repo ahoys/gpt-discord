@@ -10,7 +10,6 @@ import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
-import { initMemory } from './memory/memory';
 
 print(config);
 
@@ -75,9 +74,6 @@ const bootstrap = async () => {
       path.join(__dirname, '..', config.discord.customCommandsDir)
     );
   }
-
-  // Initialize memory.
-  await initMemory();
 
   // Register handlers.
   DiscordReady(discord);

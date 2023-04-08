@@ -1,4 +1,5 @@
 import config from '../config';
+import { print } from 'logscribe';
 import { CreateChatCompletionRequest, OpenAIApi } from 'openai';
 
 /**
@@ -9,7 +10,7 @@ export const executeChatCompletion = async (
   configuration: CreateChatCompletionRequest
 ) => {
   if (config.isDevelopment) {
-    console.log(configuration);
+    print(configuration);
   }
   return await openai.createChatCompletion({
     max_tokens: config.openai.maxTokens,

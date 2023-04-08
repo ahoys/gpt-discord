@@ -18,7 +18,7 @@ export const getDynamicTemperature = (
   dbId: string,
   useContext: boolean,
   message?: Message
-) => {
+): number => {
   const storedTemperature = db.temperatures.getKey(dbId);
   if (!config.openai.tune.useDynamicTemperature)
     return storedTemperature ?? config.openai.defaultTemperature;
