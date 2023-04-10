@@ -31,7 +31,7 @@ const production = {
     customCommandsDir: process.env.DISCORD_CUSTOMCOMMANDSDIR,
   },
   chroma: {
-    baseName: process.env.CHROMA_BASENAME || 'gpt-discord',
+    collection: process.env.CHROMA_COLLECTION || 'gpt-discord',
   },
 };
 

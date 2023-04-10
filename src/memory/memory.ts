@@ -9,6 +9,7 @@ const DISTANCE_THRESHOLD = 0.26;
 
 // Initialize ChromaDB.
 if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
+if (!config.chroma.collection) throw new Error('Missing collection.');
 const embedder = new OpenAIEmbeddingFunction(
   config.openai.apiKey,
   config.openai.embeddingModel
@@ -17,17 +18,19 @@ const embedder = new OpenAIEmbeddingFunction(
 /**
  * Returns a collection from ChromaDB.
  * @param chroma The ChromaDB client.
- * @param id The collection ID.
  * @returns {Promise<Collection | undefined>} The collection.
  */
 const getCollection = async (
-  chroma: ChromaClient,
-  id: string
+  chroma: ChromaClient
 ): Promise<Collection | undefined> => {
   try {
-    let memory = await chroma.getCollection(id, embedder);
+    let memory = await chroma.getCollection(config.chroma.collection, embedder);
     if (memory) return memory;
-    return await chroma.createCollection(id, {}, embedder);
+    return await chroma.createCollection(
+      config.chroma.collection,
+      {},
+      embedder
+    );
   } catch (error) {
     print(error);
     return;
@@ -39,6 +42,7 @@ interface IMeta {
   name: string;
   temperature: number;
   created: number;
+  guildId: string;
   channelId: string;
   messageId: string;
 }
@@ -48,13 +52,12 @@ interface IMeta {
  */
 export const addToMemory = async (
   chroma: ChromaClient,
-  collectionId: string,
   ids: string[],
   contents: string[],
   metas: IMeta[]
 ): Promise<void> => {
   try {
-    const memory = await getCollection(chroma, collectionId);
+    const memory = await getCollection(chroma);
     if (!memory) return;
     const acceptedIds = [];
     const acceptedContents = [];
@@ -67,6 +70,7 @@ export const addToMemory = async (
         typeof meta.temperature === 'number' &&
         typeof meta.created === 'number' &&
         typeof meta.channelId === 'string' &&
+        typeof meta.guildId === 'string' &&
         typeof meta.messageId === 'string'
       ) {
         acceptedIds.push(ids[index]);
@@ -93,13 +97,22 @@ interface ISelectedMemory {
  */
 export const getFromMemory = async (
   chroma: ChromaClient,
-  collectionId: string,
-  contents: string | string[]
+  contents: string | string[],
+  guild: string
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
-    const memory = await getCollection(chroma, collectionId);
+    const memory = await getCollection(chroma);
     if (!memory) return undefined;
-    let memories = await memory.query(undefined, 8, undefined, contents);
+    let memories = await memory.query(
+      undefined,
+      8,
+      {
+        metadatas: {
+          guildId: guild,
+        },
+      },
+      contents
+    );
     if (
       memories &&
       !memories.error &&

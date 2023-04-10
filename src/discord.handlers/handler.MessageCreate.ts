@@ -86,17 +86,15 @@ const replyToMessage = async (
     messages.push(currentMessage);
     let hasMemories = false;
     // Extract memories to improve the reply.
-    if (config.chroma.baseName) {
-      const memories = await getFromMemory(
-        chroma,
-        config.chroma.baseName + '-' + (message.guild as Guild).id,
-        [currentMessage.content]
-      );
-      if (Array.isArray(memories) && memories.length > 0) {
-        hasMemories = true;
-        for (const memory of memories) {
-          messages.unshift(memory);
-        }
+    const memories = await getFromMemory(
+      chroma,
+      [currentMessage.content],
+      (message.guild as Guild).id
+    );
+    if (Array.isArray(memories) && memories.length > 0) {
+      hasMemories = true;
+      for (const memory of memories) {
+        messages.unshift(memory);
       }
     }
     if (messages.length < 1) return;
@@ -138,10 +136,9 @@ const replyToMessage = async (
           await reply(message, gptMessage);
           // Update memories with new claims.
           // Do not include questions to save space.
-          if (config.chroma.baseName && !currentMessage.content.includes('?')) {
+          if (!currentMessage.content.includes('?')) {
             addToMemory(
               chroma,
-              config.chroma.baseName + '-' + (message.guild as Guild).id,
               [message.id],
               [currentMessage.content],
               [
@@ -150,6 +147,7 @@ const replyToMessage = async (
                   name: message.author.username,
                   temperature,
                   created: message.createdTimestamp,
+                  guildId: (message.guild as Guild).id,
                   channelId: message.channel.id,
                   messageId: message.id,
                 },
