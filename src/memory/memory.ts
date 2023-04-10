@@ -24,7 +24,10 @@ const getCollection = async (
   chroma: ChromaClient
 ): Promise<Collection | undefined> => {
   try {
-    let memory = await chroma.getCollection(config.chroma.collection, embedder);
+    const memory = await chroma.getCollection(
+      config.chroma.collection,
+      embedder
+    );
     if (memory) return memory;
     return await chroma.createCollection(
       config.chroma.collection,
