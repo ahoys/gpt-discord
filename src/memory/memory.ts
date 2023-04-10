@@ -107,9 +107,7 @@ export const getFromMemory = async (
       undefined,
       8,
       {
-        metadatas: {
-          guildId: guild,
-        },
+        guildId: guild,
       },
       contents
     );
