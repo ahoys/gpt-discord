@@ -9,12 +9,6 @@ import {
 } from 'openai';
 import { getId, reply } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
-import {
-  getFirstReference,
-  getMessageForMessages,
-} from '../utilities/utilities.discord';
-import { getSystemMessage } from '../utilities/utilities.system';
-import { getMemoryMessages } from '../utilities/utilities.shortTermMemory';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
 
@@ -95,7 +89,7 @@ const replyToMessage = async (
         config.chroma.baseName + '-' + (message.guild as Guild).id,
         [currentMessage.content]
       );
-      if (memories) {
+      if (Array.isArray(memories) && memories.length > 0) {
         hasMemories = true;
         for (const memory of memories) {
           messages.unshift(memory);

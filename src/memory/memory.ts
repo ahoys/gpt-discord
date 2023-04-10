@@ -110,7 +110,8 @@ export const getFromMemory = async (
           typeof memories.metadatas[0][index] === 'object' &&
           typeof memories.metadatas[0][index].created === 'number' &&
           typeof memories.documents[0][index] === 'string' &&
-          typeof memories.distances[0][index] === 'number'
+          typeof memories.distances[0][index] === 'number' &&
+          ['assistant', 'user'].includes(memories.metadatas[0][index].role)
         ) {
           memoryObjects.push({
             id: memories.ids[0][index],
@@ -120,10 +121,8 @@ export const getFromMemory = async (
           });
         }
       }
-      // Sort by created timestamp.
-      memoryObjects = memoryObjects.sort(
-        (a, b) => a.meta.created - b.meta.created
-      );
+      // Sort by distance.
+      memoryObjects = memoryObjects.sort((a, b) => a.distance - b.distance);
       // Validate and weight found memories.
       const selectedMemories: ISelectedMemory[] = [];
       for (const memory of memoryObjects) {
