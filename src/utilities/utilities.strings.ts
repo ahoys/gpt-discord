@@ -1,3 +1,9 @@
+/**
+ * Compares two strings and returns a similarity percentage
+ * @param str1 String.
+ * @param str2 String.
+ * @returns {number} Similarity percentage.
+ */
 export const compareStrings = (str1: string, str2: string): number => {
   const str1low = str1.toLowerCase();
   const str2low = str2.toLowerCase();
