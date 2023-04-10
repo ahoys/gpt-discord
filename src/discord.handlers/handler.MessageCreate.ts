@@ -120,7 +120,7 @@ const replyToMessage = async (
       db,
       dbId,
       !!lastReference,
-      message
+      hasMemories
     );
     // Execute the chat completion.
     await executeChatCompletion(openai, {

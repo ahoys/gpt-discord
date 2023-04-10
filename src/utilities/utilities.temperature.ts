@@ -1,38 +1,31 @@
 import config from '../config';
-import { Message } from 'discord.js';
 import { IDatabase } from '../types';
 
-const QUESTION_TEMPERATURE = 0.1;
-const CONTEXT_TEMPERATURE = 0.4;
+const MEMORY_TEMPERATURE_MULPLIER = 0.1;
+const CONTEXT_TEMPERATURE_MULPLIER = 0.8;
 
 /**
  * Returns the temperature to use for the chat completion.
  * @param db Database.
  * @param dbId Database entry ID.
- * @param useContext Adjust the temperature based on the context.
- * @param message Discord Message that triggered the chat completion.
+ * @param hasContext Lower the temperature if the message has context.
+ * @param hasMemory Lower the temperature if the message has memory.
  * @returns The temperature to use.
  */
 export const getDynamicTemperature = (
   db: IDatabase,
   dbId: string,
-  useContext: boolean,
-  message?: Message
+  hasContext: boolean,
+  hasMemory: boolean
 ): number => {
-  const storedTemperature = db.temperatures.getKey(dbId);
-  if (!config.openai.tune.useDynamicTemperature)
-    return storedTemperature ?? config.openai.defaultTemperature;
-  if (message && message.content.includes('?')) {
-    if (!storedTemperature) return QUESTION_TEMPERATURE;
-    return storedTemperature < QUESTION_TEMPERATURE
-      ? storedTemperature
-      : QUESTION_TEMPERATURE;
+  let storedTemperature =
+    db.temperatures.getKey(dbId) ?? config.openai.defaultTemperature;
+  if (!config.openai.tune.useDynamicTemperature) return storedTemperature;
+  if (hasContext) {
+    storedTemperature *= CONTEXT_TEMPERATURE_MULPLIER;
   }
-  if (useContext) {
-    if (!storedTemperature) return CONTEXT_TEMPERATURE;
-    return storedTemperature < CONTEXT_TEMPERATURE
-      ? storedTemperature
-      : CONTEXT_TEMPERATURE;
+  if (hasMemory) {
+    storedTemperature *= MEMORY_TEMPERATURE_MULPLIER;
   }
   return storedTemperature ?? config.openai.defaultTemperature;
 };
