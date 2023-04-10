@@ -1,7 +1,7 @@
 import config from '../config';
 import { IDatabase } from '../types';
 
-const MEMORY_TEMPERATURE_MULPLIER = 0.1;
+const MEMORY_TEMPERATURE_MULPLIER = 0.2;
 const CONTEXT_TEMPERATURE_MULPLIER = 0.8;
 
 /**
