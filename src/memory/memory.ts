@@ -3,6 +3,7 @@ import { Collection } from 'chromadb';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
 import { ChatCompletionRequestMessage } from 'openai';
+import { compareStrings } from '../utilities/utilities.strings';
 
 const DISTANCE_THRESHOLD = 0.26;
 
@@ -76,6 +77,13 @@ export const addToMemory = async (
   }
 };
 
+interface ISelectedMemory {
+  id: string;
+  meta: IMeta;
+  content: string;
+  distance: number;
+}
+
 /**
  * Get messages from memory.
  */
@@ -86,8 +94,7 @@ export const getFromMemory = async (
   try {
     const memory = await getCollection(collectionId);
     if (!memory) return undefined;
-    const memories = await memory.query(undefined, 2, undefined, contents);
-    // console.log('getFromMemory', { collectionId, memories, contents });
+    let memories = await memory.query(undefined, 8, undefined, contents);
     if (
       memories &&
       !memories.error &&
@@ -95,25 +102,60 @@ export const getFromMemory = async (
       Array.isArray(memories.documents[0]) &&
       Array.isArray(memories.metadatas[0])
     ) {
-      const messages: ChatCompletionRequestMessage[] = [];
+      // Create memory objects and filter out invalid memories.
+      let memoryObjects: ISelectedMemory[] = [];
       for (let index = 0; index < memories.ids[0].length; index++) {
-        const role = memories.metadatas[0][index].role;
-        const name = memories.metadatas[0][index].name;
-        const content = memories.documents[0][index];
-        const distance = memories.distances[0][index];
-        console.log({ content, distance });
-        const exists = messages.find(
-          (m) => m.content.toLowerCase().trim() === content.toLowerCase().trim()
-        );
-        if (!exists && distance <= DISTANCE_THRESHOLD) {
-          messages.push({
-            role,
-            name,
-            content,
+        if (
+          typeof memories.ids[0][index] === 'string' &&
+          typeof memories.metadatas[0][index] === 'object' &&
+          typeof memories.metadatas[0][index].created === 'number' &&
+          typeof memories.documents[0][index] === 'string' &&
+          typeof memories.distances[0][index] === 'number'
+        ) {
+          memoryObjects.push({
+            id: memories.ids[0][index],
+            meta: memories.metadatas[0][index],
+            content: memories.documents[0][index],
+            distance: memories.distances[0][index],
           });
         }
       }
-      return messages;
+      // Sort by created timestamp.
+      memoryObjects = memoryObjects.sort(
+        (a, b) => a.meta.created - b.meta.created
+      );
+      // Validate and weight found memories.
+      const selectedMemories: ISelectedMemory[] = [];
+      for (const memory of memoryObjects) {
+        // Filter out similar memories, selecting
+        // the closer one. The goal is to have a good variety
+        // of relevant memories, instead of the same memory
+        // repeating in different flavors.
+        let pass = true;
+        for (let r = 0; r < selectedMemories.length; r++) {
+          const existingContent = selectedMemories[r].content;
+          const v = compareStrings(memory.content, existingContent);
+          if (v > 90) {
+            // Pick the closer one recent.
+            const newMemoryDistance = memory.distance;
+            const inMemoryDistance = selectedMemories[r].distance;
+            if (newMemoryDistance < inMemoryDistance) {
+              // The new memory is closer, replace the old one.
+              selectedMemories[r] = memory;
+            }
+            pass = false;
+          }
+        }
+        if (pass && memory.distance < DISTANCE_THRESHOLD) {
+          selectedMemories.push(memory);
+        }
+      }
+      // Create messages from selected memories.
+      return selectedMemories.map((memory) => ({
+        role: memory.meta.role,
+        name: memory.meta.name,
+        content: memory.content,
+      }));
     }
     return undefined;
   } catch (error) {
