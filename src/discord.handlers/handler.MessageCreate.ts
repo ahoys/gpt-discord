@@ -11,6 +11,7 @@ import { getId, reply } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
+import { ChromaClient } from 'chromadb';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
@@ -45,7 +46,8 @@ const replyToMessage = async (
   openai: OpenAIApi,
   user: ClientUser,
   message: Message,
-  db: IDatabase
+  db: IDatabase,
+  chroma: ChromaClient
 ) => {
   try {
     // See if the message is a reply to another message.
@@ -86,6 +88,7 @@ const replyToMessage = async (
     // Extract memories to improve the reply.
     if (config.chroma.baseName) {
       const memories = await getFromMemory(
+        chroma,
         config.chroma.baseName + '-' + (message.guild as Guild).id,
         [currentMessage.content]
       );
@@ -137,6 +140,7 @@ const replyToMessage = async (
           // Do not include questions to save space.
           if (config.chroma.baseName && !currentMessage.content.includes('?')) {
             addToMemory(
+              chroma,
               config.chroma.baseName + '-' + (message.guild as Guild).id,
               [message.id],
               [currentMessage.content],
@@ -195,13 +199,18 @@ export const messageReadingAllowed = (
  * Handle incoming messages.
  * If the message mentions the bot, reply with a chat completion.
  */
-export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
+export default (
+  client: IDiscordClient,
+  openai: OpenAIApi,
+  db: IDatabase,
+  chroma: ChromaClient
+) =>
   client.on(Events.MessageCreate, async (message) => {
     try {
       // For security reasons, only specific messages are allowed
       // to be read.
       if (messageReadingAllowed(client.user, message)) {
-        replyToMessage(openai, client.user as ClientUser, message, db);
+        replyToMessage(openai, client.user as ClientUser, message, db, chroma);
       }
     } catch (error) {
       print(error);

@@ -1,13 +1,19 @@
 import config from '../config';
 import { Events, GuildMemberRoleManager } from 'discord.js';
 import { print } from 'logscribe';
-import { IDatabase, IDiscordClient } from '../types';
+import { ICmdProps, IDatabase, IDiscordClient } from '../types';
 import { OpenAIApi } from 'openai';
+import { ChromaClient } from 'chromadb';
 
 /**
  * Handle incoming interactions.
  */
-export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
+export default (
+  client: IDiscordClient,
+  openai: OpenAIApi,
+  db: IDatabase,
+  chroma: ChromaClient
+) =>
   client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
     if (!interaction.guild) return;
@@ -33,14 +39,16 @@ export default (client: IDiscordClient, openai: OpenAIApi, db: IDatabase) =>
       print(`No command matching ${interaction.commandName} was found.`);
       return;
     }
-    await command.execute({
+    const payload: ICmdProps = {
       db,
       interaction,
       openai,
       discord: client,
       paused: db.paused,
+      chroma,
       handlePause: (v: boolean) => {
         db.paused = v;
       },
-    });
+    };
+    await command.execute(payload);
   });

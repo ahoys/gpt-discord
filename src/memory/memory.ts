@@ -9,7 +9,6 @@ const DISTANCE_THRESHOLD = 0.26;
 
 // Initialize ChromaDB.
 if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
-const chroma = new ChromaClient();
 const embedder = new OpenAIEmbeddingFunction(
   config.openai.apiKey,
   config.openai.embeddingModel
@@ -17,10 +16,14 @@ const embedder = new OpenAIEmbeddingFunction(
 
 /**
  * Returns a collection from ChromaDB.
+ * @param chroma The ChromaDB client.
  * @param id The collection ID.
  * @returns {Promise<Collection | undefined>} The collection.
  */
-const getCollection = async (id: string): Promise<Collection | undefined> => {
+const getCollection = async (
+  chroma: ChromaClient,
+  id: string
+): Promise<Collection | undefined> => {
   try {
     let memory = await chroma.getCollection(id, embedder);
     if (memory) return memory;
@@ -44,13 +47,14 @@ interface IMeta {
  * Memorize messages.
  */
 export const addToMemory = async (
+  chroma: ChromaClient,
   collectionId: string,
   ids: string[],
   contents: string[],
   metas: IMeta[]
 ): Promise<void> => {
   try {
-    const memory = await getCollection(collectionId);
+    const memory = await getCollection(chroma, collectionId);
     if (!memory) return;
     const acceptedIds = [];
     const acceptedContents = [];
@@ -88,11 +92,12 @@ interface ISelectedMemory {
  * Get messages from memory.
  */
 export const getFromMemory = async (
+  chroma: ChromaClient,
   collectionId: string,
   contents: string | string[]
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
-    const memory = await getCollection(collectionId);
+    const memory = await getCollection(chroma, collectionId);
     if (!memory) return undefined;
     let memories = await memory.query(undefined, 8, undefined, contents);
     if (

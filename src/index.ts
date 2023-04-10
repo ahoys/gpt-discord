@@ -10,6 +10,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
+import { ChromaClient } from 'chromadb';
 
 print(config);
 
@@ -37,6 +38,9 @@ const openai = new OpenAIApi(
     apiKey: config.openai.apiKey,
   })
 );
+
+// Create ChromaDB client.
+const chroma = new ChromaClient();
 
 const bootstrap = async () => {
   // The database, which is basically
@@ -77,8 +81,8 @@ const bootstrap = async () => {
 
   // Register handlers.
   DiscordReady(discord);
-  DiscordInteractionCreate(discord, openai, db);
-  DiscordMessageCreate(discord, openai, db);
+  DiscordInteractionCreate(discord, openai, db, chroma);
+  DiscordMessageCreate(discord, openai, db, chroma);
 
   // Login to discord. This will then trigger the Ready-handler.
   discord.login(config.discord.token);
