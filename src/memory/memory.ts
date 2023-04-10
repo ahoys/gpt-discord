@@ -24,16 +24,17 @@ const getCollection = async (
   chroma: ChromaClient
 ): Promise<Collection | undefined> => {
   try {
-    const collection = await chroma.getCollection(
-      config.chroma.collection,
-      embedder
-    );
-    if (collection) return collection;
-    return await chroma.createCollection(
-      config.chroma.collection,
-      {},
-      embedder
-    );
+    const collections: { name: string }[] = await chroma.listCollections();
+    const exists = collections.find((c) => c.name === config.chroma.collection);
+    if (exists) {
+      return await chroma.getCollection(config.chroma.collection, embedder);
+    } else {
+      return await chroma.createCollection(
+        config.chroma.collection,
+        {},
+        embedder
+      );
+    }
   } catch (error) {
     print(error);
     return;
@@ -60,8 +61,8 @@ export const addToMemory = async (
   metas: IMeta[]
 ): Promise<void> => {
   try {
-    const memory = await getCollection(chroma);
-    if (!memory) return;
+    const collection = await getCollection(chroma);
+    if (!collection) return;
     const acceptedIds = [];
     const acceptedContents = [];
     const acceptedMetas = [];
@@ -82,7 +83,12 @@ export const addToMemory = async (
       }
     }
     if (acceptedIds.length < 1) return;
-    await memory.add(acceptedIds, undefined, acceptedMetas, acceptedContents);
+    await collection.add(
+      acceptedIds,
+      undefined,
+      acceptedMetas,
+      acceptedContents
+    );
   } catch (error) {
     print(error);
   }
@@ -104,22 +110,17 @@ export const getFromMemory = async (
   guild: string
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
-    const memory = await getCollection(chroma);
-    if (!memory) return undefined;
-    let memories = await memory.query(
-      undefined,
-      8,
-      {
-        guildId: guild,
-      },
-      contents
-    );
+    const collection = await getCollection(chroma);
+    if (!collection) return;
+    const memories = await collection.query(undefined, 6, undefined, contents);
     if (
       memories &&
       !memories.error &&
+      Array.isArray(memories.ids) &&
       Array.isArray(memories.ids[0]) &&
       Array.isArray(memories.documents[0]) &&
-      Array.isArray(memories.metadatas[0])
+      Array.isArray(memories.metadatas[0]) &&
+      Array.isArray(memories.distances[0])
     ) {
       // Create memory objects and filter out invalid memories.
       let memoryObjects: ISelectedMemory[] = [];

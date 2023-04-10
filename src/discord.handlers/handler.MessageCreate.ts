@@ -91,6 +91,7 @@ const replyToMessage = async (
       [currentMessage.content],
       (message.guild as Guild).id
     );
+    // let memories: any;
     if (Array.isArray(memories) && memories.length > 0) {
       hasMemories = true;
       for (const memory of memories) {
