@@ -160,6 +160,8 @@ export const getFromMemory = async (
         name: memory.meta.name,
         content: memory.content,
       }));
+    } else if (memories?.error) {
+      print(memories.error);
     }
     return undefined;
   } catch (error) {
