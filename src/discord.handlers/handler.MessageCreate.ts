@@ -87,9 +87,9 @@ const replyToMessage = async (
     let hasMemories = false;
     // Extract memories to improve the reply.
     const memories = await getFromMemory(
+      config.chroma.collection + '.' + (message.guild as Guild).id,
       chroma,
-      [currentMessage.content],
-      (message.guild as Guild).id
+      [currentMessage.content]
     );
     // let memories: any;
     if (Array.isArray(memories) && memories.length > 0) {
@@ -139,6 +139,7 @@ const replyToMessage = async (
           // Do not include questions to save space.
           if (!currentMessage.content.includes('?')) {
             addToMemory(
+              config.chroma.collection + '.' + (message.guild as Guild).id,
               chroma,
               [message.id],
               [currentMessage.content],

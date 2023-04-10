@@ -6,6 +6,7 @@ import { ChatCompletionRequestMessage } from 'openai';
 import { compareStrings } from '../utilities/utilities.strings';
 
 const DISTANCE_THRESHOLD = 0.26;
+const MAX_RESULTS = 6;
 
 // Initialize ChromaDB.
 if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
@@ -21,19 +22,16 @@ const embedder = new OpenAIEmbeddingFunction(
  * @returns {Promise<Collection | undefined>} The collection.
  */
 const getCollection = async (
-  chroma: ChromaClient
+  chroma: ChromaClient,
+  id: string
 ): Promise<Collection | undefined> => {
   try {
     const collections: { name: string }[] = await chroma.listCollections();
-    const exists = collections.find((c) => c.name === config.chroma.collection);
+    const exists = collections.find((c) => c.name === id);
     if (exists) {
-      return await chroma.getCollection(config.chroma.collection, embedder);
+      return await chroma.getCollection(id, embedder);
     } else {
-      return await chroma.createCollection(
-        config.chroma.collection,
-        {},
-        embedder
-      );
+      return await chroma.createCollection(id, {}, embedder);
     }
   } catch (error) {
     print(error);
@@ -55,13 +53,14 @@ interface IMeta {
  * Memorize messages.
  */
 export const addToMemory = async (
+  id: string,
   chroma: ChromaClient,
   ids: string[],
   contents: string[],
   metas: IMeta[]
 ): Promise<void> => {
   try {
-    const collection = await getCollection(chroma);
+    const collection = await getCollection(chroma, id);
     if (!collection) return;
     const acceptedIds = [];
     const acceptedContents = [];
@@ -105,14 +104,20 @@ interface ISelectedMemory {
  * Get messages from memory.
  */
 export const getFromMemory = async (
+  id: string,
   chroma: ChromaClient,
-  contents: string | string[],
-  guild: string
+  contents: string | string[]
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
-    const collection = await getCollection(chroma);
+    const collection = await getCollection(chroma, id);
     if (!collection) return;
-    const memories = await collection.query(undefined, 6, undefined, contents);
+    const count = await collection.count();
+    const memories = await collection.query(
+      undefined,
+      count < MAX_RESULTS ? count : MAX_RESULTS,
+      undefined,
+      contents
+    );
     if (
       memories &&
       !memories.error &&
