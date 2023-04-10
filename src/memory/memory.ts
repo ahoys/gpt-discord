@@ -135,7 +135,7 @@ export const getFromMemory = async (
           const existingContent = selectedMemories[r].content;
           const v = compareStrings(memory.content, existingContent);
           if (v > 90) {
-            // Pick the closer one recent.
+            // Pick the closer one.
             const newMemoryDistance = memory.distance;
             const inMemoryDistance = selectedMemories[r].distance;
             if (newMemoryDistance < inMemoryDistance) {
