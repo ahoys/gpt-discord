@@ -120,16 +120,11 @@ const replyToMessage = async (
     // Finally, add the system message.
     const dbId = getId((message.guild as Guild).id, message.channel.id);
     const guildSystem = db.systems.getKey(dbId);
-    if (guildSystem || config.openai.defaultSystem || hasMemories) {
-      const memoryHelper = hasMemories
-        ? 'Use previous messages as a memory. '
-        : '';
+    if (guildSystem || config.openai.defaultSystem) {
       messages.unshift({
         role: 'system',
         name: user.username,
-        content: (
-          memoryHelper + guildSystem || (config.openai.defaultSystem as string)
-        )
+        content: (guildSystem || (config.openai.defaultSystem as string) || '')
           .trim()
           .substring(0, 512),
       });

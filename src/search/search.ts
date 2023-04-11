@@ -93,7 +93,6 @@ export const searchAnswersToMessages = async (
     }>(
       `https://api.duckduckgo.com/?format=json&q=${encodeURIComponent(query)}`
     );
-    console.log(result.data?.AbstractSource, result.data?.Type);
     if (
       typeof result?.data === 'object' &&
       typeof result.data.Abstract === 'string' &&
