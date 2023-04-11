@@ -19,7 +19,6 @@ export const googleThisToMessages = async (
     const response = await googlethis.search(query, options);
     if (typeof response === 'object' && Array.isArray(response.results)) {
       const messages: ChatCompletionRequestMessage[] = [];
-      console.log(response);
       if (typeof response.featured_snippet?.description === 'string') {
         messages.push({
           role: 'assistant',
@@ -35,7 +34,7 @@ export const googleThisToMessages = async (
       } else {
         for (
           let index = 0;
-          index < response.results.length && index < 3;
+          index < response.results.length && index < 2;
           index++
         ) {
           const result = response.results[index];
