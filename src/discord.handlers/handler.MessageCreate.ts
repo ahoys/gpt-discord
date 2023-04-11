@@ -13,6 +13,7 @@ import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
 import { ChromaClient } from 'chromadb';
 import {
+  googleThisToMessages,
   searchAnswersToMessages,
   searchSnippetsToMessages,
 } from '../search/search';
@@ -109,10 +110,13 @@ const replyToMessage = async (
     if (searchAnswer) {
       messages.unshift(searchAnswer);
     } else if (currentMessage.content.includes('?') && !previousReference) {
-      const snippets = await searchSnippetsToMessages(currentMessage.content);
-      if (snippets) {
-        for (const snippet of snippets) {
-          messages.unshift(snippet);
+      // Scrape Google.
+      const googleThisMessages = await googleThisToMessages(
+        currentMessage.content
+      );
+      if (googleThisMessages) {
+        for (const googleThisMessage of googleThisMessages) {
+          messages.unshift(googleThisMessage);
         }
       }
     }

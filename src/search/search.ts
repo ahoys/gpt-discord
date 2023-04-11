@@ -1,7 +1,52 @@
 import axios from 'axios';
 import config from '../config';
+import googlethis from 'googlethis';
 import { print } from 'logscribe';
 import { ChatCompletionRequestMessage } from 'openai';
+
+export const googleThisToMessages = async (
+  query: string
+): Promise<ChatCompletionRequestMessage[] | undefined> => {
+  try {
+    console.log('in');
+    const options = {
+      page: 0,
+      safe: true, // Safe Search
+      parse_ads: true,
+      additional_params: {
+        hl: 'fi',
+      },
+    };
+    const response = await googlethis.search(query, options);
+    if (typeof response === 'object' && Array.isArray(response.results)) {
+      const messages: ChatCompletionRequestMessage[] = [];
+      if (typeof response.featured_snippet?.description === 'string') {
+        messages.push({
+          role: 'assistant',
+          name: 'Google',
+          content: response.featured_snippet.description,
+        });
+      } else {
+        for (
+          let index = 0;
+          index < response.results.length && index < 3;
+          index++
+        ) {
+          const result = response.results[index];
+          messages.push({
+            role: 'assistant',
+            name: 'Google',
+            content: result.description,
+          });
+        }
+      }
+      return messages.length ? messages : undefined;
+    }
+    return;
+  } catch (error) {
+    print(error);
+  }
+};
 
 let previousCalls: number[] = [];
 
