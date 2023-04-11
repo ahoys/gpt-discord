@@ -108,7 +108,7 @@ const replyToMessage = async (
       : undefined;
     if (searchAnswer) {
       messages.unshift(searchAnswer);
-    } else if (currentMessage.content.includes('?')) {
+    } else if (currentMessage.content.includes('?') && !previousReference) {
       const snippets = await searchSnippetsToMessages(currentMessage.content);
       if (snippets) {
         for (const snippet of snippets) {
