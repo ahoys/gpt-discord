@@ -8,7 +8,6 @@ export const googleThisToMessages = async (
   query: string
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
-    console.log('in');
     const options = {
       page: 0,
       safe: true, // Safe Search
