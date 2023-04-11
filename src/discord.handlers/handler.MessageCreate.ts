@@ -12,6 +12,10 @@ import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
 import { ChromaClient } from 'chromadb';
+import {
+  searchAnswersToMessages,
+  searchSnippetsToMessages,
+} from '../search/search';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
@@ -98,6 +102,20 @@ const replyToMessage = async (
         messages.unshift(memory);
       }
     }
+    // Look for an answer to the question from external sources.
+    const searchAnswer = currentMessage.content.includes('?')
+      ? await searchAnswersToMessages(currentMessage.content)
+      : undefined;
+    if (searchAnswer) {
+      messages.unshift(searchAnswer);
+    } else if (currentMessage.content.includes('?')) {
+      const snippets = await searchSnippetsToMessages(currentMessage.content);
+      if (snippets) {
+        for (const snippet of snippets) {
+          messages.unshift(snippet);
+        }
+      }
+    }
     if (messages.length < 1) return;
     // Finally, add the system message.
     const dbId = getId((message.guild as Guild).id, message.channel.id);
@@ -122,7 +140,8 @@ const replyToMessage = async (
       db,
       dbId,
       !!lastReference,
-      hasMemories
+      hasMemories,
+      !!searchAnswer
     );
     // Execute the chat completion.
     await executeChatCompletion(openai, {

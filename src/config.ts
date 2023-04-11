@@ -33,6 +33,11 @@ const production = {
   chroma: {
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
   },
+  google: {
+    customSearchApiKey: process.env.GOOGLE_CUSTOMSEARCHAPIKEY,
+    cx: process.env.GOOGLE_CX,
+    maxCallsPerDay: Number(process.env.GOOGLE_MAXCALLSPERDAY) ?? 96,
+  },
 };
 
 const development: typeof production = {
