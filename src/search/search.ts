@@ -13,17 +13,24 @@ export const googleThisToMessages = async (
       safe: true, // Safe Search
       parse_ads: true,
       additional_params: {
-        hl: 'fi',
+        hl: 'en',
       },
     };
     const response = await googlethis.search(query, options);
     if (typeof response === 'object' && Array.isArray(response.results)) {
       const messages: ChatCompletionRequestMessage[] = [];
+      console.log(response);
       if (typeof response.featured_snippet?.description === 'string') {
         messages.push({
           role: 'assistant',
           name: 'Google',
           content: response.featured_snippet.description,
+        });
+      } else if (response.time.date) {
+        messages.unshift({
+          role: 'assistant',
+          name: 'Date_and_Time',
+          content: new Date().toString(),
         });
       } else {
         for (
