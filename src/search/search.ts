@@ -30,7 +30,7 @@ export const searchTheWebForAnswers = async (
     const google = await searchFromGoogle(query, maxLength);
     if (google && google.length) {
       // To make AI not claim something silly about future events.
-      if (google.find((g) => g.name === 'Google_result')) {
+      if (google.find((g) => g.name !== 'Date_and_Time')) {
         messages.push({
           role: 'assistant',
           name: 'Date_and_Time',
