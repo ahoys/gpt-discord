@@ -156,10 +156,17 @@ export const getFromMemory = async (
         // of relevant memories, instead of the same memory
         // repeating in different flavors.
         let pass = true;
-        for (let r = 0; r < selectedMemories.length; r++) {
+        const contentStr = Array.isArray(contents)
+          ? contents.join(' ')
+          : contents;
+        const memoryToContent = compareStrings(memory.content, contentStr);
+        if (memoryToContent >= 95) pass = false;
+        for (let r = 0; r < selectedMemories.length && pass; r++) {
           const existingContent = selectedMemories[r].content;
           const v = compareStrings(memory.content, existingContent);
-          if (v > 90) {
+          if (compareStrings(memory.content, contentStr) > 90) {
+            pass = false;
+          } else if (v > 90) {
             // Pick the closer one.
             const newMemoryDistance = memory.distance;
             const inMemoryDistance = selectedMemories[r].distance;

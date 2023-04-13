@@ -17,9 +17,16 @@ export const googleThisToMessages = async (
       },
     };
     const response = await googlethis.search(query, options);
+    console.log(response);
     if (typeof response === 'object' && Array.isArray(response.results)) {
       const messages: ChatCompletionRequestMessage[] = [];
-      if (typeof response.featured_snippet?.description === 'string') {
+      if (typeof response.knowledge_panel?.description === 'string') {
+        messages.push({
+          role: 'assistant',
+          name: 'Google',
+          content: response.knowledge_panel.description,
+        });
+      } else if (typeof response.featured_snippet?.description === 'string') {
         messages.push({
           role: 'assistant',
           name: 'Google',
@@ -41,7 +48,7 @@ export const googleThisToMessages = async (
           messages.push({
             role: 'assistant',
             name: 'Google',
-            content: result.description,
+            content: 'May contain the answer: ' + result.description,
           });
         }
       }
