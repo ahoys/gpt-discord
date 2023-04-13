@@ -1,9 +1,9 @@
 import config from '../config';
 import { IDatabase } from '../types';
 
-const MEMORY_TEMPERATURE_MULPLIER = 0.2;
+const MEMORY_TEMPERATURE_MULPLIER = 0.5;
 const CONTEXT_TEMPERATURE_MULPLIER = 0.8;
-const ANSWER_TEMPERATURE_MULPLIER = 0.1;
+const ANSWER_TEMPERATURE_MULPLIER = 0.5;
 
 /**
  * Returns the temperature to use for the chat completion.

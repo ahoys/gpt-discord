@@ -106,17 +106,18 @@ interface ISelectedMemory {
 export const getFromMemory = async (
   id: string,
   chroma: ChromaClient,
-  contents: string | string[]
+  embeddings: number[],
+  contents: string
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     const collection = await getCollection(chroma, id);
     if (!collection) return;
     const count = await collection.count();
     const memories = await collection.query(
-      undefined,
+      embeddings,
       count < MAX_RESULTS ? count : MAX_RESULTS,
       undefined,
-      contents
+      undefined
     );
     if (
       memories &&

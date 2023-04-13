@@ -10,7 +10,7 @@ import { ChatCompletionRequestMessage } from 'openai';
  */
 export const searchFromDuckDuckGo = async (
   query: string,
-  maxLength = 512
+  maxLength = 1024
 ): Promise<ChatCompletionRequestMessage | undefined> => {
   try {
     const result = await axios.get<{

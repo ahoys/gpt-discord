@@ -13,6 +13,7 @@ import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
 import { ChromaClient } from 'chromadb';
 import { searchTheWebForAnswers } from '../search/search';
+import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
@@ -87,10 +88,12 @@ const replyToMessage = async (
     messages.push(currentMessage);
     let hasMemories = false;
     // Extract memories to improve the reply.
+    const vector = await executeEmbedding(openai, currentMessage.content);
     const memories = await getFromMemory(
       config.chroma.collection + '.' + (message.guild as Guild).id,
       chroma,
-      [currentMessage.content]
+      vector,
+      currentMessage.content
     );
     // let memories: any;
     if (Array.isArray(memories) && memories.length > 0) {
@@ -107,6 +110,8 @@ const replyToMessage = async (
       (currentMessage.content.includes('?') || !previousReference)
     ) {
       const searchResults = await searchTheWebForAnswers(
+        openai,
+        vector,
         currentMessage.content
       );
       if (searchResults) {

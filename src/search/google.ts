@@ -10,8 +10,8 @@ import { ChatCompletionRequestMessage } from 'openai';
  */
 export const searchFromGoogle = async (
   query: string,
-  maxLength = 512
-): Promise<ChatCompletionRequestMessage | undefined> => {
+  maxLength = 1024
+): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     const options = {
       page: 0,
@@ -24,31 +24,53 @@ export const searchFromGoogle = async (
     const response = await googlethis.search(query, options);
     if (typeof response === 'object' && Array.isArray(response.results)) {
       if (typeof response.knowledge_panel?.description === 'string') {
-        return {
-          role: 'assistant',
-          name: 'Google',
-          content: response.knowledge_panel.description,
-        };
+        return [
+          {
+            role: 'user',
+            name: 'Google_fact',
+            content: response.knowledge_panel.description,
+          },
+        ];
       } else if (typeof response.featured_snippet?.description === 'string') {
-        return {
-          role: 'assistant',
-          name: 'Google',
-          content: response.featured_snippet.description,
-        };
+        return [
+          {
+            role: 'user',
+            name: 'Google_fact',
+            content: response.featured_snippet.description,
+          },
+        ];
       } else if (response.time.date) {
-        return {
-          role: 'assistant',
-          name: 'Date_and_Time',
-          content: new Date().toString(),
-        };
-      } else if (response.results[0]?.description) {
-        return {
-          role: 'assistant',
-          name: 'Google',
-          content: response.results[0].description
-            .substring(0, maxLength)
-            .trim(),
-        };
+        return [
+          {
+            role: 'assistant',
+            name: 'Date_and_Time',
+            content: new Date().toString(),
+          },
+        ];
+      } else if (Array.isArray(response.results)) {
+        const maxResults = 3;
+        let messages: ChatCompletionRequestMessage[] = [];
+        for (
+          let index = 0;
+          index < response.results.length && index < maxResults - 1;
+          index++
+        ) {
+          const element = response.results[index];
+          console.log(element);
+          if (
+            typeof element.title === 'string' &&
+            typeof element.description === 'string'
+          ) {
+            messages.push({
+              role: 'user',
+              name: 'Google_result',
+              content: (element.title + ': ' + element.description)
+                .substring(0, maxLength / maxResults)
+                .trim(),
+            });
+          }
+        }
+        return messages;
       }
     }
     return;
