@@ -160,7 +160,7 @@ export const getFromMemory = async (
           ? contents.join(' ')
           : contents;
         const memoryToContent = compareStrings(memory.content, contentStr);
-        if (memoryToContent >= 95) pass = false;
+        if (memoryToContent >= 90) pass = false;
         for (let r = 0; r < selectedMemories.length && pass; r++) {
           const existingContent = selectedMemories[r].content;
           const v = compareStrings(memory.content, existingContent);
