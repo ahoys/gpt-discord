@@ -56,7 +56,6 @@ export const searchFromGoogle = async (
           index++
         ) {
           const element = response.results[index];
-          console.log(element);
           if (
             typeof element.title === 'string' &&
             typeof element.description === 'string'
