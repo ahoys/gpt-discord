@@ -12,11 +12,7 @@ import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
 import { addToMemory, getFromMemory } from '../memory/memory';
 import { ChromaClient } from 'chromadb';
-import {
-  googleThisToMessages,
-  searchAnswersToMessages,
-  searchSnippetsToMessages,
-} from '../search/search';
+import { searchTheWebForAnswers } from '../search/search';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
@@ -104,19 +100,19 @@ const replyToMessage = async (
       }
     }
     // Look for an answer to the question from external sources.
-    const searchAnswer = currentMessage.content.includes('?')
-      ? await searchAnswersToMessages(currentMessage.content)
-      : undefined;
-    if (searchAnswer) {
-      messages.unshift(searchAnswer);
-    } else if (currentMessage.content.includes('?') && !previousReference) {
-      // Scrape Google.
-      const googleThisMessages = await googleThisToMessages(
+    let hasSearchResults = false;
+    if (
+      currentMessage.content.length < 128 &&
+      !currentMessage.content.includes('`') &&
+      (currentMessage.content.includes('?') || !previousReference)
+    ) {
+      const searchResults = await searchTheWebForAnswers(
         currentMessage.content
       );
-      if (googleThisMessages) {
-        for (const googleThisMessage of googleThisMessages) {
-          messages.unshift(googleThisMessage);
+      if (searchResults) {
+        hasSearchResults = true;
+        for (const searchResult of searchResults) {
+          messages.unshift(searchResult);
         }
       }
     }
@@ -140,7 +136,7 @@ const replyToMessage = async (
       dbId,
       !!lastReference,
       hasMemories,
-      !!searchAnswer
+      hasSearchResults
     );
     // Execute the chat completion.
     await executeChatCompletion(openai, {
