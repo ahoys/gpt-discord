@@ -33,7 +33,7 @@ export const searchTheWebForAnswers = async (
       if (google.find((g) => g.name !== 'Date_and_Time')) {
         messages.push({
           role: 'assistant',
-          name: 'Date_and_Time',
+          name: 'TODAY_IS',
           content: new Date().toString(),
         });
       }
