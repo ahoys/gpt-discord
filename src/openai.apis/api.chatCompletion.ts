@@ -9,7 +9,7 @@ export const executeChatCompletion = async (
   openai: OpenAIApi,
   configuration: CreateChatCompletionRequest
 ) => {
-  if (config.isDevelopment) {
+  if (config.isDevelopment || config.isVerbose) {
     print(configuration);
   }
   return await openai.createChatCompletion({

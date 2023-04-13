@@ -1,5 +1,6 @@
 const production = {
   isDevelopment: false,
+  isVerbose: process.env.ISVERBOSE === 'true',
   openai: {
     apiKey: process.env.OPENAI_APIKEY,
     defaultSystem: process.env.OPENAI_DEFAULTSYSTEM,
@@ -32,11 +33,6 @@ const production = {
   },
   chroma: {
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
-  },
-  google: {
-    customSearchApiKey: process.env.GOOGLE_CUSTOMSEARCHAPIKEY,
-    cx: process.env.GOOGLE_CX,
-    maxCallsPerDay: Number(process.env.GOOGLE_MAXCALLSPERDAY) ?? 96,
   },
 };
 
