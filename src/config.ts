@@ -10,8 +10,6 @@ const production = {
     improvedMath: process.env.OPENAI_IMPROVEDMATH === 'true',
     embeddingModel:
       process.env.OPENAI_EMBEDDINGMODEL || 'text-embedding-ada-002',
-    maxMemoryRequestsInMinute:
-      Number(process.env.OPENAI_MAXMEMORYREQUESTSINMINUTE) || 30,
     tune: {
       appendMemoryToContext:
         process.env.OPENAI_TUNE_APPENDMEMORYTOCONTEXT !== 'false',

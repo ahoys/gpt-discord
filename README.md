@@ -44,9 +44,6 @@ OPENAI_MAXTOKENS=
 # Model to be used with embedding (memory).
 OPENAI_EMBEDDINGMODEL=
 
-# How often can the short term memory be updated.
-OPENAI_MAXMEMORYREQUESTSINMINUTE=
-
 # Discord application key.
 DISCORD_APPID=
 

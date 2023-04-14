@@ -10,7 +10,6 @@ export const executeEmbedding = async (
   input: string
 ): Promise<number[]> => {
   let vector: number[] = [];
-  if (config.openai.maxMemoryRequestsInMinute <= 0) return vector;
   await openai
     .createEmbedding({
       model: config.openai.embeddingModel,

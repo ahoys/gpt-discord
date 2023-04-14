@@ -31,7 +31,7 @@ export const searchTheWebForAnswers = async (
     }
     // Then search from Google.
     const google = includesQuestion
-      ? await searchFromGoogle(query, maxLength, 3)
+      ? await searchFromGoogle(query, maxLength, 6)
       : undefined;
     if (google && google.length) {
       // To make AI not claim something silly about future events.
@@ -47,17 +47,19 @@ export const searchTheWebForAnswers = async (
         message: ChatCompletionRequestMessage;
       }[] = [];
       for (const message of google) {
-        const similarity = compute_cosine_similarity(
-          await executeEmbedding(openai, message.content),
-          vector
-        );
-        googleResults.push({
-          similarity,
-          message,
-        });
+        if (typeof message.content === 'string') {
+          const similarity = compute_cosine_similarity(
+            await executeEmbedding(openai, message.content),
+            vector
+          );
+          googleResults.push({
+            similarity,
+            message,
+          });
+        }
       }
       googleResults.sort((a, b) => b.similarity - a.similarity);
-      const googleMessages = googleResults.map((gr) => gr.message);
+      const googleMessages = googleResults.map((gr) => gr.message).slice(0, 2);
       return googleMessages.concat(messages);
     }
   } catch (error) {
