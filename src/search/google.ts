@@ -10,7 +10,8 @@ import { ChatCompletionRequestMessage } from 'openai';
  */
 export const searchFromGoogle = async (
   query: string,
-  maxLength = 1024
+  maxLength = 1024,
+  maxResults = 3
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     const options = {
@@ -48,7 +49,6 @@ export const searchFromGoogle = async (
           },
         ];
       } else if (Array.isArray(response.results)) {
-        const maxResults = 3;
         let messages: ChatCompletionRequestMessage[] = [];
         for (
           let index = 0;
@@ -64,7 +64,7 @@ export const searchFromGoogle = async (
               role: 'user',
               name: 'Google_result',
               content: (element.title + ': ' + element.description)
-                .substring(0, maxLength / maxResults)
+                .substring(0, maxLength)
                 .trim(),
             });
           }

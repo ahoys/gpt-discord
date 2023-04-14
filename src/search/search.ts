@@ -19,15 +19,23 @@ export const searchTheWebForAnswers = async (
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     if (maxLength < 1) return;
+    const includesQuestion = query.includes('?');
     const messages: ChatCompletionRequestMessage[] = [];
     // First search from DuckDuckGo.
-    const ddg = await searchFromDuckDuckGo(query, maxLength);
+    const ddg = includesQuestion
+      ? await searchFromDuckDuckGo(query, maxLength)
+      : undefined;
     if (ddg) {
       messages.push(ddg);
       return messages;
     }
     // Then search from Google.
-    const google = await searchFromGoogle(query, maxLength);
+    const google = await searchFromGoogle(
+      query,
+      maxLength,
+      // Reduce queries if not a question.
+      includesQuestion ? 3 : 1
+    );
     if (google && google.length) {
       // To make AI not claim something silly about future events.
       if (google.find((g) => g.name !== 'Date_and_Time')) {
