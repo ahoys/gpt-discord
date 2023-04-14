@@ -52,7 +52,7 @@ export const searchFromGoogle = async (
         let messages: ChatCompletionRequestMessage[] = [];
         for (
           let index = 0;
-          index < response.results.length && index < maxResults - 1;
+          index < response.results.length && index < maxResults;
           index++
         ) {
           const element = response.results[index];
