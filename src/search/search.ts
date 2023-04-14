@@ -30,12 +30,9 @@ export const searchTheWebForAnswers = async (
       return messages;
     }
     // Then search from Google.
-    const google = await searchFromGoogle(
-      query,
-      maxLength,
-      // Reduce queries if not a question.
-      includesQuestion ? 3 : 1
-    );
+    const google = includesQuestion
+      ? await searchFromGoogle(query, maxLength, 3)
+      : undefined;
     if (google && google.length) {
       // To make AI not claim something silly about future events.
       if (google.find((g) => g.name !== 'Date_and_Time')) {
