@@ -110,6 +110,7 @@ export const getFromMemory = async (
   contents: string
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
+    if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
     if (!collection) return;
     const count = await collection.count();

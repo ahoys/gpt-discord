@@ -30,6 +30,7 @@ const production = {
     customCommandsDir: process.env.DISCORD_CUSTOMCOMMANDSDIR,
   },
   chroma: {
+    enabled: process.env.CHROMA_ENABLED !== 'false',
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
   },
 };
