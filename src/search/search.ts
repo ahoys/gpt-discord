@@ -4,6 +4,8 @@ import { searchFromDuckDuckGo } from './duckduckgo';
 import { searchFromGoogle } from './google';
 import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import { print } from 'logscribe';
+import axios from 'axios';
+import config from '../config';
 
 /**
  * Will search the web for answers.
@@ -35,7 +37,7 @@ export const searchTheWebForAnswers = async (
       : undefined;
     if (google && google.length) {
       // To make AI not claim something silly about future events.
-      if (google.find((g) => g.name !== 'Date_and_Time')) {
+      if (google.find((g) => g.message.name !== 'Date_and_Time')) {
         messages.push({
           role: 'assistant',
           name: 'TODAY_IS',
@@ -46,15 +48,47 @@ export const searchTheWebForAnswers = async (
         similarity: number;
         message: ChatCompletionRequestMessage;
       }[] = [];
-      for (const message of google) {
-        if (typeof message.content === 'string') {
+      for (const googleObject of google) {
+        if (
+          config.stackoverflow.key &&
+          googleObject.meta.url?.startsWith(
+            'https://stackoverflow.com/questions'
+          )
+        ) {
+          const idRegex = /\/questions\/(\d+)\//;
+          const match = googleObject.meta.url.match(idRegex);
+          const questionId = match ? match[1] : null;
+          const answers = await axios.get(
+            `https://api.stackexchange.com/${config.stackoverflow.api}/questions/${questionId}/answers?key=${config.stackoverflow.key}&site=stackoverflow&filter=!.(5GpzDNEH9`
+          );
+          if (Array.isArray(answers?.data?.items)) {
+            interface ISOItem {
+              score: number;
+              body: string;
+            }
+            const highestScoreObject = answers?.data?.items.reduce(
+              (prev: ISOItem, current: ISOItem) =>
+                prev.score > current.score ? prev : current
+            );
+            if (highestScoreObject) {
+              googleResults.push({
+                similarity: 1,
+                message: {
+                  role: 'assistant',
+                  name: 'StackOverflow_answer',
+                  content: highestScoreObject.body,
+                },
+              });
+            }
+          }
+        } else if (typeof googleObject.message.content === 'string') {
           const similarity = compute_cosine_similarity(
-            await executeEmbedding(openai, message.content),
+            await executeEmbedding(openai, googleObject.message.content),
             vector
           );
           googleResults.push({
             similarity,
-            message,
+            message: googleObject.message,
           });
         }
       }

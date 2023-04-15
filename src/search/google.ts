@@ -12,7 +12,15 @@ export const searchFromGoogle = async (
   query: string,
   maxLength = 1024,
   maxResults = 3
-): Promise<ChatCompletionRequestMessage[] | undefined> => {
+): Promise<
+  | {
+      meta: {
+        url?: string;
+      };
+      message: ChatCompletionRequestMessage;
+    }[]
+  | undefined
+> => {
   try {
     const options = {
       page: 0,
@@ -27,29 +35,43 @@ export const searchFromGoogle = async (
       if (typeof response.knowledge_panel?.description === 'string') {
         return [
           {
-            role: 'user',
-            name: 'Google_fact',
-            content: response.knowledge_panel.description,
+            meta: {},
+            message: {
+              role: 'user',
+              name: 'Google_fact',
+              content: response.knowledge_panel.description,
+            },
           },
         ];
       } else if (typeof response.featured_snippet?.description === 'string') {
         return [
           {
-            role: 'user',
-            name: 'Google_fact',
-            content: response.featured_snippet.description,
+            meta: {},
+            message: {
+              role: 'user',
+              name: 'Google_fact',
+              content: response.featured_snippet.description,
+            },
           },
         ];
       } else if (response.time.date) {
         return [
           {
-            role: 'assistant',
-            name: 'Date_and_Time',
-            content: new Date().toString(),
+            meta: {},
+            message: {
+              role: 'assistant',
+              name: 'Date_and_Time',
+              content: new Date().toString(),
+            },
           },
         ];
       } else if (Array.isArray(response.results)) {
-        let messages: ChatCompletionRequestMessage[] = [];
+        let messages: {
+          meta: {
+            url: string;
+          };
+          message: ChatCompletionRequestMessage;
+        }[] = [];
         for (
           let index = 0;
           index < response.results.length && index < maxResults;
@@ -61,11 +83,16 @@ export const searchFromGoogle = async (
             typeof element.description === 'string'
           ) {
             messages.push({
-              role: 'user',
-              name: 'Google_result',
-              content: (element.title + ': ' + element.description)
-                .substring(0, maxLength)
-                .trim(),
+              meta: {
+                url: element.url,
+              },
+              message: {
+                role: 'user',
+                name: 'Google_result',
+                content: (element.title + ': ' + element.description)
+                  .substring(0, maxLength)
+                  .trim(),
+              },
             });
           }
         }

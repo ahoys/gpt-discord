@@ -33,6 +33,10 @@ const production = {
     enabled: process.env.CHROMA_ENABLED !== 'false',
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
   },
+  stackoverflow: {
+    api: process.env.STACKOVERFLOW_API || '2.2',
+    key: process.env.STACKOVERFLOW_KEY,
+  },
 };
 
 const development: typeof production = {
