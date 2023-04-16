@@ -11,13 +11,15 @@ import config from '../config';
  * Will search the web for answers.
  * @param query The query to search for.
  * @param maxLength The maximum length of the answer.
+ * @param maxInDepthMultiplier Multipliers for answers that are certainly facts.
  * @returns {Promise<string>} The answer.
  */
 export const searchTheWebForAnswers = async (
   openai: OpenAIApi,
   vector: number[],
   query: string,
-  maxLength = 512
+  maxLength = 512,
+  maxInDepthMultiplier = 8
 ): Promise<ChatCompletionRequestMessage[] | undefined> => {
   try {
     if (maxLength < 1) return;
@@ -74,9 +76,11 @@ export const searchTheWebForAnswers = async (
               googleResults.push({
                 similarity: 1,
                 message: {
-                  role: 'assistant',
+                  role: 'user',
                   name: 'StackOverflow_answer',
-                  content: highestScoreObject.body,
+                  content: highestScoreObject.body
+                    ?.replace(/<\/?[^>]+(>|$)/g, '')
+                    .substring(0, maxLength * maxInDepthMultiplier),
                 },
               });
             }
