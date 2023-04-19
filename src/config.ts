@@ -25,7 +25,7 @@ const production = {
     appId: process.env.DISCORD_APPID,
     token: process.env.DISCORD_TOKEN,
     role: process.env.DISCORD_ROLEID,
-    maxContentLength: Number(process.env.DISCORD_MAXCONTENTLENGTH) || 2000,
+    maxContentLength: Number(process.env.DISCORD_MAXCONTENTLENGTH) || 4000,
     ignoreCommands: process.env.DISCORD_IGNORECOMMANDS?.split(',') || [],
     customCommandsDir: process.env.DISCORD_CUSTOMCOMMANDSDIR,
   },
