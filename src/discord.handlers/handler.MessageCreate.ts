@@ -200,7 +200,8 @@ export const messageReadingAllowed = (
     if (!message.channel) return false;
     if (message.author.bot) return false;
     if (message.cleanContent?.trim().length < 1) return false;
-    if (message.cleanContent?.trim().length > 2000) return false;
+    if (message.cleanContent?.trim().length > config.discord.maxContentLength)
+      return false;
     if (
       !message.mentions.has(user) &&
       !message.content.includes(`@<${user.id}>`)
