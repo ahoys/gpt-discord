@@ -60,6 +60,7 @@ export const addToMemory = async (
   metas: IMeta[]
 ): Promise<void> => {
   try {
+    if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
     if (!collection) return;
     const acceptedIds = [];
