@@ -40,7 +40,7 @@ const openai = new OpenAIApi(
 );
 
 // Create ChromaDB client.
-const chroma = new ChromaClient();
+const chroma = new ChromaClient(config.chroma.address);
 
 const bootstrap = async () => {
   // The database, which is basically

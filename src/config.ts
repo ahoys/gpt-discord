@@ -31,6 +31,7 @@ const production = {
   },
   chroma: {
     enabled: process.env.CHROMA_ENABLED !== 'false',
+    address: process.env.CHROMA_ADDRESS,
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
   },
   stackoverflow: {
