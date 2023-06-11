@@ -24,7 +24,7 @@ const getFormedMessage = (
   parse = false
 ): ChatCompletionRequestMessage => ({
   role: message.author.id === user.id ? 'assistant' : 'user',
-  name: message.author.username,
+  name: message.author.username.replace(/[^a-zA-Z0-9]/g, ''),
   content: parse
     ? message.cleanContent.replace(`@${user.username} `, '').trim()
     : message.cleanContent,
@@ -127,7 +127,7 @@ const replyToMessage = async (
     if (guildSystem || config.openai.defaultSystem) {
       messages.unshift({
         role: 'system',
-        name: user.username,
+        name: user.username, //
         content: (guildSystem || (config.openai.defaultSystem as string) || '')
           .trim()
           .substring(0, 512),
