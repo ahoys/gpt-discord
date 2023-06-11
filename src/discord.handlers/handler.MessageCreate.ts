@@ -95,7 +95,6 @@ const replyToMessage = async (
       vector,
       currentMessage.content
     );
-    // let memories: any;
     if (Array.isArray(memories) && memories.length > 0) {
       hasMemories = true;
       for (const memory of memories) {
