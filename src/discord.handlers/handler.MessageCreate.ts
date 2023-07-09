@@ -202,8 +202,10 @@ export const messageReadingAllowed = (
     if (message.cleanContent?.trim().length > config.discord.maxContentLength)
       return false;
     if (
-      !message.mentions.has(user) &&
-      !message.content.includes(`@<${user.id}>`)
+      message.mentions.everyone ||
+      message.mentions.roles.some((role) => role.mentionable) ||
+      (!message.mentions.has(user) &&
+        !message.content.includes(`@<${user.id}>`))
     ) {
       return false;
     }
