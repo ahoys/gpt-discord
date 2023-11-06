@@ -29,6 +29,7 @@ const getCollection = async (
     const collections: { name: string }[] = await chroma.listCollections();
     const exists = collections.find((c) => c.name === id);
     if (exists) {
+      const collection = await chroma.getCollection(id, embedder);
       return await chroma.getCollection(id, embedder);
     } else {
       return await chroma.createCollection(id, {}, embedder);
@@ -63,6 +64,9 @@ export const addToMemory = async (
     if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
     if (!collection) return;
+    print(
+      `Stored to memory. The size of ${id} collection is now ${await collection.count()}`
+    );
     const acceptedIds = [];
     const acceptedContents = [];
     const acceptedMetas = [];
