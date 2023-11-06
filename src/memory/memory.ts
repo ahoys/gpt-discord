@@ -1,8 +1,8 @@
 import config from '../config';
+import OpenAI from 'openai';
 import { Collection } from 'chromadb';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
-import { ChatCompletionRequestMessage } from 'openai';
 import { compareStrings } from '../utilities/utilities.strings';
 
 const DISTANCE_THRESHOLD = 0.26;
@@ -113,7 +113,7 @@ export const getFromMemory = async (
   chroma: ChromaClient,
   embeddings: number[],
   contents: string
-): Promise<ChatCompletionRequestMessage[] | undefined> => {
+): Promise<OpenAI.Chat.Completions.ChatCompletionMessage[] | undefined> => {
   try {
     if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);

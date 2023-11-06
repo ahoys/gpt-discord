@@ -1,5 +1,5 @@
 import compute_cosine_similarity from 'compute-cosine-similarity';
-import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { searchFromDuckDuckGo } from './duckduckgo';
 import { searchFromGoogle } from './google';
 import { executeEmbedding } from '../openai.apis/api.createEmbedding';
@@ -15,16 +15,16 @@ import config from '../config';
  * @returns {Promise<string>} The answer.
  */
 export const searchTheWebForAnswers = async (
-  openai: OpenAIApi,
+  openai: OpenAI,
   vector: number[],
   query: string,
   maxLength = 512,
   maxInDepthMultiplier = 8
-): Promise<ChatCompletionRequestMessage[] | undefined> => {
+): Promise<OpenAI.Chat.Completions.ChatCompletionMessage[] | undefined> => {
   try {
     if (maxLength < 1) return;
     const includesQuestion = query.includes('?');
-    const messages: ChatCompletionRequestMessage[] = [];
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessage[] = [];
     // First search from DuckDuckGo.
     const ddg = includesQuestion
       ? await searchFromDuckDuckGo(query, maxLength)
@@ -39,16 +39,13 @@ export const searchTheWebForAnswers = async (
       : undefined;
     if (google && google.length) {
       // To make AI not claim something silly about future events.
-      if (google.find((g) => g.message.name !== 'Date_and_Time')) {
-        messages.push({
-          role: 'assistant',
-          name: 'TODAY_IS',
-          content: new Date().toString(),
-        });
-      }
+      messages.push({
+        role: 'assistant',
+        content: new Date().toString(),
+      });
       const googleResults: {
         similarity: number;
-        message: ChatCompletionRequestMessage;
+        message: OpenAI.Chat.Completions.ChatCompletionMessage;
       }[] = [];
       for (const googleObject of google) {
         if (
@@ -77,7 +74,6 @@ export const searchTheWebForAnswers = async (
                 similarity: 1,
                 message: {
                   role: 'user',
-                  name: 'StackOverflow_answer',
                   content: highestScoreObject.body
                     ?.replace(/<\/?[^>]+(>|$)/g, '')
                     .substring(0, maxLength * maxInDepthMultiplier),

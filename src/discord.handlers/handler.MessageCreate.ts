@@ -1,12 +1,8 @@
 import config from '../config';
+import OpenAI from 'openai';
 import { ClientUser, Events, Guild, Message } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
-import {
-  ChatCompletionRequestMessage,
-  CreateChatCompletionRequest,
-  OpenAIApi,
-} from 'openai';
 import { getId, reply } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
@@ -22,9 +18,8 @@ const getFormedMessage = (
   user: ClientUser,
   message: Message,
   parse = false
-): ChatCompletionRequestMessage => ({
+): OpenAI.Chat.Completions.ChatCompletionMessage => ({
   role: message.author.id === user.id ? 'assistant' : 'user',
-  name: message.author.username.replace(/[^a-zA-Z0-9]/g, ''),
   content: parse
     ? message.cleanContent.replace(`@${user.username} `, '').trim()
     : message.cleanContent,
@@ -45,7 +40,7 @@ const getReference = async (message: Message): Promise<Message | undefined> =>
  * @param message
  */
 const replyToMessage = async (
-  openai: OpenAIApi,
+  openai: OpenAI,
   user: ClientUser,
   message: Message,
   db: IDatabase,
@@ -54,8 +49,10 @@ const replyToMessage = async (
   try {
     // See if the message is a reply to another message.
     // That another message may contain information about the context.
-    const messages: CreateChatCompletionRequest['messages'] = [];
-    let lastReference: ChatCompletionRequestMessage | undefined;
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessage[] = [];
+    let lastReference:
+      | OpenAI.Chat.Completions.ChatCompletionMessage
+      | undefined;
     let totalLength = 0;
     let safeLimit = MAX_REPLIES_TO_FETCH;
     let previousReference: Message | undefined = await getReference(message);
@@ -72,7 +69,10 @@ const replyToMessage = async (
         if (reference) {
           const formedMessage = getFormedMessage(user, reference);
           lastReference = formedMessage;
-          if (totalLength + formedMessage.content.length < MAX_REPLY_LENGTH) {
+          if (
+            totalLength + (formedMessage.content || '').length <
+            MAX_REPLY_LENGTH
+          ) {
             messages.unshift(formedMessage);
           }
         }
@@ -88,12 +88,12 @@ const replyToMessage = async (
     messages.push(currentMessage);
     let hasMemories = false;
     // Extract memories to improve the reply.
-    const vector = await executeEmbedding(openai, currentMessage.content);
+    const vector = await executeEmbedding(openai, currentMessage.content || '');
     const memories = await getFromMemory(
       config.chroma.collection + '.' + (message.guild as Guild).id,
       chroma,
       vector,
-      currentMessage.content
+      currentMessage.content || ''
     );
     if (Array.isArray(memories) && memories.length > 0) {
       hasMemories = true;
@@ -104,14 +104,14 @@ const replyToMessage = async (
     // Look for an answer to the question from external sources.
     let hasSearchResults = false;
     if (
-      currentMessage.content.length < 128 &&
-      !currentMessage.content.includes('`') &&
-      (currentMessage.content.includes('?') || !previousReference)
+      (currentMessage.content || '').length < 128 &&
+      !currentMessage.content?.includes('`') &&
+      (currentMessage.content?.includes('?') || !previousReference)
     ) {
       const searchResults = await searchTheWebForAnswers(
         openai,
         vector,
-        currentMessage.content
+        currentMessage.content || ''
       );
       if (searchResults) {
         hasSearchResults = true;
@@ -127,7 +127,6 @@ const replyToMessage = async (
     if (guildSystem || config.openai.defaultSystem) {
       messages.unshift({
         role: 'system',
-        name: user.username, //
         content: (guildSystem || (config.openai.defaultSystem as string) || '')
           .trim()
           .substring(0, 512),
@@ -150,17 +149,17 @@ const replyToMessage = async (
     })
       .then(async (response) => {
         // Reply to the message.
-        const gptMessage = response.data.choices[0].message?.content;
+        const gptMessage = response.choices[0].message?.content;
         if (gptMessage) {
           await reply(message, gptMessage);
           // Update memories with new claims.
           // Do not include questions to save space.
-          if (!currentMessage.content.includes('?')) {
+          if (!currentMessage.content?.includes('?')) {
             addToMemory(
               config.chroma.collection + '.' + (message.guild as Guild).id,
               chroma,
               [message.id],
-              [currentMessage.content],
+              [currentMessage.content || ''],
               [
                 {
                   role: 'user',
@@ -222,7 +221,7 @@ export const messageReadingAllowed = (
  */
 export default (
   client: IDiscordClient,
-  openai: OpenAIApi,
+  openai: OpenAI,
   db: IDatabase,
   chroma: ChromaClient
 ) =>

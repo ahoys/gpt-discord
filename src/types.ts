@@ -1,7 +1,7 @@
+import OpenAI from 'openai';
 import { JSONScribeFile } from 'jsonscribe';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Client as DiscordJs, Collection } from 'discord.js';
-import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
 import { ChromaClient } from 'chromadb';
 
 export interface IDiscordClient extends DiscordJs {
@@ -21,7 +21,7 @@ export interface IMemoryObject {
     recalledCount: number; // Number of times the memory object has been recalled.
     vector: number[]; // Vector representation of the memory.
   };
-  message: ChatCompletionRequestMessage;
+  message: OpenAI.Chat.Completions.ChatCompletionMessage;
 }
 
 export interface IDatabase {
@@ -37,7 +37,7 @@ export interface ICmdProps {
   discord: IDiscordClient;
   db: IDatabase;
   interaction: ChatInputCommandInteraction;
-  openai: OpenAIApi;
+  openai: OpenAI;
   chroma: ChromaClient;
   paused: boolean;
   handlePause: (v: boolean) => void;

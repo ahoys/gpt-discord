@@ -1,6 +1,6 @@
 import googlethis from 'googlethis';
+import OpenAI from 'openai';
 import { print } from 'logscribe';
-import { ChatCompletionRequestMessage } from 'openai';
 
 /**
  * Uses Google to search for an answer.
@@ -17,7 +17,7 @@ export const searchFromGoogle = async (
       meta: {
         url?: string;
       };
-      message: ChatCompletionRequestMessage;
+      message: OpenAI.Chat.Completions.ChatCompletionMessage;
     }[]
   | undefined
 > => {
@@ -38,7 +38,6 @@ export const searchFromGoogle = async (
             meta: {},
             message: {
               role: 'user',
-              name: 'Google_fact',
               content: response.knowledge_panel.description,
             },
           },
@@ -49,19 +48,7 @@ export const searchFromGoogle = async (
             meta: {},
             message: {
               role: 'user',
-              name: 'Google_fact',
               content: response.featured_snippet.description,
-            },
-          },
-        ];
-      } else if (response.time.date) {
-        return [
-          {
-            meta: {},
-            message: {
-              role: 'assistant',
-              name: 'Date_and_Time',
-              content: new Date().toString(),
             },
           },
         ];
@@ -70,7 +57,7 @@ export const searchFromGoogle = async (
           meta: {
             url: string;
           };
-          message: ChatCompletionRequestMessage;
+          message: OpenAI.Chat.Completions.ChatCompletionMessage;
         }[] = [];
         for (
           let index = 0;
@@ -88,7 +75,6 @@ export const searchFromGoogle = async (
               },
               message: {
                 role: 'user',
-                name: 'Google_result',
                 content: (element.title + ': ' + element.description)
                   .substring(0, maxLength)
                   .trim(),

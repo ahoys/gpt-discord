@@ -16,7 +16,6 @@ describe('getMemoriesByVectorSimilarity', () => {
         vector: [1, 2, 3],
       },
       message: {
-        name: '',
         role: 'user',
         content: 'Memory 1',
       },
@@ -28,7 +27,6 @@ describe('getMemoriesByVectorSimilarity', () => {
         vector: [4, 5, 6],
       },
       message: {
-        name: '',
         role: 'user',
         content: 'Memory 2',
       },
@@ -40,7 +38,6 @@ describe('getMemoriesByVectorSimilarity', () => {
         vector: [7, 8, 9],
       },
       message: {
-        name: '',
         role: 'user',
         content: 'Memory 3',
       },

@@ -1,8 +1,8 @@
 import config from '../config';
+import OpenAI from 'openai';
 import { Events, GuildMemberRoleManager } from 'discord.js';
 import { print } from 'logscribe';
 import { ICmdProps, IDatabase, IDiscordClient } from '../types';
-import { OpenAIApi } from 'openai';
 import { ChromaClient } from 'chromadb';
 
 /**
@@ -10,7 +10,7 @@ import { ChromaClient } from 'chromadb';
  */
 export default (
   client: IDiscordClient,
-  openai: OpenAIApi,
+  openai: OpenAI,
   db: IDatabase,
   chroma: ChromaClient
 ) =>

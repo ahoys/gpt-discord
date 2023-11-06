@@ -1,12 +1,12 @@
 import path from 'path';
 import fs from 'fs';
 import config from './config';
+import OpenAI from 'openai';
 import DiscordReady from './discord.handlers/handler.Ready';
 import DiscordMessageCreate from './discord.handlers/handler.MessageCreate';
 import DiscordInteractionCreate from './discord.handlers/handler.InteractionCreate';
 import jsonscribe from 'jsonscribe';
 import { Client as DiscordJs, GatewayIntentBits, Collection } from 'discord.js';
-import { Configuration, OpenAIApi } from 'openai';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
@@ -33,11 +33,9 @@ const discord = new DiscordJs({
 
 // The OpenAI API client.
 // This is used to communicate with the OpenAI API.
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: config.openai.apiKey,
-  })
-);
+const openai = new OpenAI({
+  apiKey: config.openai.apiKey,
+});
 
 // Create ChromaDB client.
 const chroma = new ChromaClient(config.chroma.address);

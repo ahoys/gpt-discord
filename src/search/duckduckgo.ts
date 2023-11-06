@@ -1,6 +1,6 @@
 import axios from 'axios';
+import OpenAI from 'openai';
 import { print } from 'logscribe';
-import { ChatCompletionRequestMessage } from 'openai';
 
 /**
  * Uses DuckDuckGo to search for an answer.
@@ -11,7 +11,7 @@ import { ChatCompletionRequestMessage } from 'openai';
 export const searchFromDuckDuckGo = async (
   query: string,
   maxLength = 1024
-): Promise<ChatCompletionRequestMessage | undefined> => {
+): Promise<OpenAI.Chat.Completions.ChatCompletionMessage | undefined> => {
   try {
     const result = await axios.get<{
       Abstract: string;
@@ -32,7 +32,6 @@ export const searchFromDuckDuckGo = async (
       const content = sentences.slice(0, 4).join('. ').trim();
       return {
         role: 'assistant',
-        name: result.data.AbstractSource,
         content: content.substring(0, maxLength).trim(),
       };
     }
