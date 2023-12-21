@@ -40,6 +40,13 @@ export const searchTheWebForAnswers = async (
       includesQuestion && config.search.googleEnabled
         ? await searchFromGoogle(query, maxLength, 6)
         : undefined;
+    if ((google && google.length) || ddg) {
+      messages.push({
+        role: 'user',
+        content:
+          'Attempt to use the information given earlier to answer the following question.',
+      });
+    }
     if (google && google.length) {
       // To make AI not claim something silly about future events.
       messages.push({
