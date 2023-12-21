@@ -71,6 +71,7 @@ export const addToMemory = async (
     if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
     if (!collection) return;
+    collection.id = id; // Fixes a weird error with ChromaDB.
     print(
       `Stored to memory. The size of ${id} collection is now ${await collection.count()}`
     );
@@ -129,6 +130,7 @@ export const getFromMemory = async (
     if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
     if (!collection) return;
+    collection.id = id; // Fixes a weird error with ChromaDB.
     const count = await collection.count();
     const memories = await collection.query({
       queryEmbeddings: embeddings,
