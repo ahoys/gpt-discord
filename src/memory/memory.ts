@@ -1,6 +1,6 @@
 import config from '../config';
 import OpenAI from 'openai';
-import { Collection } from 'chromadb';
+import { Collection, Metadata, Metadatas } from 'chromadb';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
 import { compareStrings } from '../utilities/utilities.strings';
@@ -11,10 +11,10 @@ const MAX_RESULTS = 6;
 // Initialize ChromaDB.
 if (!config.openai.apiKey) throw new Error('No OpenAI API key provided.');
 if (!config.chroma.collection) throw new Error('Missing collection.');
-const embedder = new OpenAIEmbeddingFunction(
-  config.openai.apiKey,
-  config.openai.embeddingModel
-);
+const embedder = new OpenAIEmbeddingFunction({
+  openai_api_key: config.openai.apiKey,
+  openai_model: config.openai.embeddingModel,
+});
 
 /**
  * Returns a collection from ChromaDB.
@@ -29,10 +29,16 @@ const getCollection = async (
     const collections: { name: string }[] = await chroma.listCollections();
     const exists = collections.find((c) => c.name === id);
     if (exists) {
-      const collection = await chroma.getCollection(id, embedder);
-      return await chroma.getCollection(id, embedder);
+      return await chroma.getCollection({
+        name: id,
+        embeddingFunction: embedder,
+      });
     } else {
-      return await chroma.createCollection(id, {}, embedder);
+      return await chroma.createCollection({
+        name: id,
+        metadata: {},
+        embeddingFunction: embedder,
+      });
     }
   } catch (error) {
     print(error);
@@ -58,7 +64,7 @@ export const addToMemory = async (
   chroma: ChromaClient,
   ids: string[],
   contents: string[],
-  metas: IMeta[]
+  metas: Metadatas
 ): Promise<void> => {
   try {
     if (!config.chroma.enabled) return;
@@ -69,11 +75,11 @@ export const addToMemory = async (
     );
     const acceptedIds = [];
     const acceptedContents = [];
-    const acceptedMetas = [];
+    const acceptedMetas: Metadatas = [];
     for (let index = 0; index < contents.length; index++) {
-      const meta = metas[index];
+      const meta: Metadata = metas[index];
       if (
-        ['system', 'assistant', 'user'].includes(meta.role) &&
+        ['system', 'assistant', 'user'].includes(String(meta.role)) &&
         typeof meta.name === 'string' &&
         typeof meta.temperature === 'number' &&
         typeof meta.created === 'number' &&
@@ -87,12 +93,11 @@ export const addToMemory = async (
       }
     }
     if (acceptedIds.length < 1) return;
-    await collection.add(
-      acceptedIds,
-      undefined,
-      acceptedMetas,
-      acceptedContents
-    );
+    await collection.add({
+      ids: acceptedIds,
+      metadatas: acceptedMetas,
+      documents: acceptedContents,
+    });
   } catch (error) {
     print(error);
   }
@@ -119,12 +124,10 @@ export const getFromMemory = async (
     const collection = await getCollection(chroma, id);
     if (!collection) return;
     const count = await collection.count();
-    const memories = await collection.query(
-      embeddings,
-      count < MAX_RESULTS ? count : MAX_RESULTS,
-      undefined,
-      undefined
-    );
+    const memories = await collection.query({
+      queryEmbeddings: embeddings,
+      nResults: count < MAX_RESULTS ? count : MAX_RESULTS,
+    });
     if (
       memories &&
       !memories.error &&

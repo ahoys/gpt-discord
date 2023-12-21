@@ -10,15 +10,25 @@ import { addToMemory, getFromMemory } from '../memory/memory';
 import { ChromaClient } from 'chromadb';
 import { searchTheWebForAnswers } from '../search/search';
 import { executeEmbedding } from '../openai.apis/api.createEmbedding';
+import {
+  ChatCompletionMessage,
+  ChatCompletionSystemMessageParam,
+  ChatCompletionUserMessageParam,
+} from 'openai/resources';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
+
+type TOpenAIMessage =
+  | ChatCompletionMessage
+  | ChatCompletionSystemMessageParam
+  | ChatCompletionUserMessageParam;
 
 const getFormedMessage = (
   user: ClientUser,
   message: Message,
   parse = false
-): OpenAI.Chat.Completions.ChatCompletionMessage => ({
+): ChatCompletionMessage | ChatCompletionUserMessageParam => ({
   role: message.author.id === user.id ? 'assistant' : 'user',
   content: parse
     ? message.cleanContent.replace(`@${user.username} `, '').trim()
@@ -49,10 +59,8 @@ const replyToMessage = async (
   try {
     // See if the message is a reply to another message.
     // That another message may contain information about the context.
-    const messages: OpenAI.Chat.Completions.ChatCompletionMessage[] = [];
-    let lastReference:
-      | OpenAI.Chat.Completions.ChatCompletionMessage
-      | undefined;
+    const messages: TOpenAIMessage[] = [];
+    let lastReference: TOpenAIMessage | undefined;
     let totalLength = 0;
     let safeLimit = MAX_REPLIES_TO_FETCH;
     let previousReference: Message | undefined = await getReference(message);
@@ -85,15 +93,19 @@ const replyToMessage = async (
     }
     // Add the message that triggered the reply.
     const currentMessage = getFormedMessage(user, message, true);
+    const currentMessageContent =
+      typeof currentMessage.content === 'string'
+        ? currentMessage.content || ''
+        : '';
     messages.push(currentMessage);
     let hasMemories = false;
     // Extract memories to improve the reply.
-    const vector = await executeEmbedding(openai, currentMessage.content || '');
+    const vector = await executeEmbedding(openai, currentMessageContent);
     const memories = await getFromMemory(
       config.chroma.collection + '.' + (message.guild as Guild).id,
       chroma,
       vector,
-      currentMessage.content || ''
+      currentMessageContent
     );
     if (Array.isArray(memories) && memories.length > 0) {
       hasMemories = true;
@@ -104,14 +116,14 @@ const replyToMessage = async (
     // Look for an answer to the question from external sources.
     let hasSearchResults = false;
     if (
-      (currentMessage.content || '').length < 128 &&
-      !currentMessage.content?.includes('`') &&
-      (currentMessage.content?.includes('?') || !previousReference)
+      (currentMessageContent || '').length < 128 &&
+      !currentMessageContent?.includes('`') &&
+      (currentMessageContent?.includes('?') || !previousReference)
     ) {
       const searchResults = await searchTheWebForAnswers(
         openai,
         vector,
-        currentMessage.content || ''
+        currentMessageContent
       );
       if (searchResults) {
         hasSearchResults = true;
@@ -154,12 +166,12 @@ const replyToMessage = async (
           await reply(message, gptMessage);
           // Update memories with new claims.
           // Do not include questions to save space.
-          if (!currentMessage.content?.includes('?')) {
+          if (!currentMessageContent?.includes('?')) {
             addToMemory(
               config.chroma.collection + '.' + (message.guild as Guild).id,
               chroma,
               [message.id],
-              [currentMessage.content || ''],
+              [currentMessageContent],
               [
                 {
                   role: 'user',

@@ -1258,7 +1258,7 @@ chokidar@^3.5.2:
   optionalDependencies:
     fsevents "~2.3.2"
 
-chromadb@^1.3.1:
+chromadb@^1.7.3:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/chromadb/-/chromadb-1.7.3.tgz#809019efd8c6126c5e4527875905f29c6c828fa6"
   integrity sha512-3GgvQjpqgk5C89x5EuTDaXKbfrdqYDJ5UVyLQ3ZmwxnpetNc+HhRDGjkvXa5KSvpQ3lmKoyDoqnN4tZepfFkbw==
@@ -2810,7 +2810,7 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openai@^4.15.4:
+openai@^4.24.0:
   version "4.24.0"
   resolved "https://registry.yarnpkg.com/openai/-/openai-4.24.0.tgz#0870accfd7a4a95375d5fe2caacb46b809da5611"
   integrity sha512-h8fsas4lu0ul18oDzFIZpEQryh2SJEUJWanyfEwjME/klcKWZM/blDz2cKiT+aFBqPJzcYdCUj/8E7n20f0jEw==
