@@ -1,6 +1,7 @@
 import googlethis from 'googlethis';
 import OpenAI from 'openai';
 import { print } from 'logscribe';
+import { TOpenAIMessage } from '../discord.handlers/handler.MessageCreate';
 
 /**
  * Uses Google to search for an answer.
@@ -17,7 +18,7 @@ export const searchFromGoogle = async (
       meta: {
         url?: string;
       };
-      message: OpenAI.Chat.Completions.ChatCompletionMessage;
+      message: TOpenAIMessage;
     }[]
   | undefined
 > => {
@@ -57,7 +58,7 @@ export const searchFromGoogle = async (
           meta: {
             url: string;
           };
-          message: OpenAI.Chat.Completions.ChatCompletionMessage;
+          message: TOpenAIMessage;
         }[] = [];
         for (
           let index = 0;

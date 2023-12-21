@@ -6,6 +6,7 @@ import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import { print } from 'logscribe';
 import axios from 'axios';
 import config from '../config';
+import { TOpenAIMessage } from '../discord.handlers/handler.MessageCreate';
 
 /**
  * Will search the web for answers.
@@ -20,11 +21,11 @@ export const searchTheWebForAnswers = async (
   query: string,
   maxLength = 512,
   maxInDepthMultiplier = 8
-): Promise<OpenAI.Chat.Completions.ChatCompletionMessage[] | undefined> => {
+): Promise<TOpenAIMessage[] | undefined> => {
   try {
     if (maxLength < 1) return;
     const includesQuestion = query.includes('?');
-    const messages: OpenAI.Chat.Completions.ChatCompletionMessage[] = [];
+    const messages: TOpenAIMessage[] = [];
     // First search from DuckDuckGo.
     const ddg = includesQuestion
       ? await searchFromDuckDuckGo(query, maxLength)
@@ -45,7 +46,7 @@ export const searchTheWebForAnswers = async (
       });
       const googleResults: {
         similarity: number;
-        message: OpenAI.Chat.Completions.ChatCompletionMessage;
+        message: TOpenAIMessage;
       }[] = [];
       for (const googleObject of google) {
         if (

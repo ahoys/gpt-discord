@@ -4,6 +4,7 @@ import { Collection, Metadata, Metadatas } from 'chromadb';
 import { ChromaClient, OpenAIEmbeddingFunction } from 'chromadb';
 import { print } from 'logscribe';
 import { compareStrings } from '../utilities/utilities.strings';
+import { TOpenAIMessage } from '../discord.handlers/handler.MessageCreate';
 
 const DISTANCE_THRESHOLD = 0.26;
 const MAX_RESULTS = 6;
@@ -93,6 +94,11 @@ export const addToMemory = async (
       }
     }
     if (acceptedIds.length < 1) return;
+    console.log({
+      ids: acceptedIds,
+      metadatas: acceptedMetas,
+      documents: acceptedContents,
+    });
     await collection.add({
       ids: acceptedIds,
       metadatas: acceptedMetas,
@@ -118,7 +124,7 @@ export const getFromMemory = async (
   chroma: ChromaClient,
   embeddings: number[],
   contents: string
-): Promise<OpenAI.Chat.Completions.ChatCompletionMessage[] | undefined> => {
+): Promise<TOpenAIMessage[] | undefined> => {
   try {
     if (!config.chroma.enabled) return;
     const collection = await getCollection(chroma, id);
@@ -129,29 +135,33 @@ export const getFromMemory = async (
       nResults: count < MAX_RESULTS ? count : MAX_RESULTS,
     });
     if (
-      memories &&
-      !memories.error &&
+      typeof memories === 'object' &&
       Array.isArray(memories.ids) &&
       Array.isArray(memories.ids[0]) &&
       Array.isArray(memories.documents[0]) &&
       Array.isArray(memories.metadatas[0]) &&
+      memories.distances &&
       Array.isArray(memories.distances[0])
     ) {
       // Create memory objects and filter out invalid memories.
       let memoryObjects: ISelectedMemory[] = [];
       for (let index = 0; index < memories.ids[0].length; index++) {
+        const metaData = memories?.metadatas[0]
+          ? memories?.metadatas[0][index]
+          : undefined;
         if (
           typeof memories.ids[0][index] === 'string' &&
           typeof memories.metadatas[0][index] === 'object' &&
-          typeof memories.metadatas[0][index].created === 'number' &&
+          typeof memories.metadatas[0][index]?.created === 'number' &&
           typeof memories.documents[0][index] === 'string' &&
           typeof memories.distances[0][index] === 'number' &&
-          ['assistant', 'user'].includes(memories.metadatas[0][index].role)
+          metaData &&
+          ['assistant', 'user'].includes(String(metaData?.role))
         ) {
           memoryObjects.push({
             id: memories.ids[0][index],
-            meta: memories.metadatas[0][index],
-            content: memories.documents[0][index],
+            meta: memories.metadatas[0][index] as unknown as IMeta,
+            content: memories.documents[0][index] as string,
             distance: memories.distances[0][index],
           });
         }
@@ -197,8 +207,6 @@ export const getFromMemory = async (
         name: memory.meta.name,
         content: memory.content,
       }));
-    } else if (memories?.error) {
-      print(memories.error);
     }
     return undefined;
   } catch (error) {

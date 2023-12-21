@@ -19,7 +19,7 @@ import {
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
 
-type TOpenAIMessage =
+export type TOpenAIMessage =
   | ChatCompletionMessage
   | ChatCompletionSystemMessageParam
   | ChatCompletionUserMessageParam;

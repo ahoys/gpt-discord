@@ -3,6 +3,7 @@ import { JSONScribeFile } from 'jsonscribe';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Client as DiscordJs, Collection } from 'discord.js';
 import { ChromaClient } from 'chromadb';
+import { TOpenAIMessage } from './discord.handlers/handler.MessageCreate';
 
 export interface IDiscordClient extends DiscordJs {
   commands: Collection<string, any>;
@@ -21,7 +22,7 @@ export interface IMemoryObject {
     recalledCount: number; // Number of times the memory object has been recalled.
     vector: number[]; // Vector representation of the memory.
   };
-  message: OpenAI.Chat.Completions.ChatCompletionMessage;
+  message: TOpenAIMessage;
 }
 
 export interface IDatabase {
