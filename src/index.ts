@@ -38,7 +38,21 @@ const openai = new OpenAI({
 });
 
 // Create ChromaDB client.
-const chroma = new ChromaClient({ path: config.chroma.address });
+const chroma = new ChromaClient({
+  path: config.chroma.address,
+});
+
+// To check if the connection to the database is working.
+const listCollections = async () => {
+  try {
+    const collections = await chroma.listCollections();
+    print(collections);
+  } catch (error) {
+    print(error);
+  }
+};
+
+listCollections();
 
 const bootstrap = async () => {
   // The database, which is basically
