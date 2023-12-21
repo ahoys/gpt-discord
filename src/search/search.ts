@@ -1,11 +1,11 @@
 import compute_cosine_similarity from 'compute-cosine-similarity';
 import OpenAI from 'openai';
+import axios from 'axios';
+import config from '../config';
 import { searchFromDuckDuckGo } from './duckduckgo';
 import { searchFromGoogle } from './google';
 import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import { print } from 'logscribe';
-import axios from 'axios';
-import config from '../config';
 import { TOpenAIMessage } from '../discord.handlers/handler.MessageCreate';
 
 /**
@@ -27,17 +27,19 @@ export const searchTheWebForAnswers = async (
     const includesQuestion = query.includes('?');
     const messages: TOpenAIMessage[] = [];
     // First search from DuckDuckGo.
-    const ddg = includesQuestion
-      ? await searchFromDuckDuckGo(query, maxLength)
-      : undefined;
+    const ddg =
+      includesQuestion && config.search.ddgEnabled
+        ? await searchFromDuckDuckGo(query, maxLength)
+        : undefined;
     if (ddg) {
       messages.push(ddg);
       return messages;
     }
     // Then search from Google.
-    const google = includesQuestion
-      ? await searchFromGoogle(query, maxLength, 6)
-      : undefined;
+    const google =
+      includesQuestion && config.search.googleEnabled
+        ? await searchFromGoogle(query, maxLength, 6)
+        : undefined;
     if (google && google.length) {
       // To make AI not claim something silly about future events.
       messages.push({

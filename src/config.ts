@@ -40,6 +40,8 @@ const production = {
   },
   search: {
     enabled: process.env.SEARCH_ENABLED !== 'false',
+    googleEnabled: process.env.SEARCH_GOOGLEENABLED !== 'false',
+    ddgEnabled: process.env.SEARCH_DDGENABLED !== 'false',
   },
 };
 
