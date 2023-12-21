@@ -116,6 +116,7 @@ const replyToMessage = async (
     // Look for an answer to the question from external sources.
     let hasSearchResults = false;
     if (
+      config.search.enabled &&
       (currentMessageContent || '').length < 128 &&
       !currentMessageContent?.includes('`') &&
       (currentMessageContent?.includes('?') || !previousReference)

@@ -38,6 +38,9 @@ const production = {
     api: process.env.STACKOVERFLOW_API || '2.2',
     key: process.env.STACKOVERFLOW_KEY,
   },
+  search: {
+    enabled: process.env.SEARCH_ENABLED !== 'false',
+  },
 };
 
 const development: typeof production = {
