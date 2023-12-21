@@ -117,7 +117,6 @@ const replyToMessage = async (
     let hasSearchResults = false;
     if (
       config.search.enabled &&
-      (currentMessageContent || '').length < 128 &&
       !currentMessageContent?.includes('`') &&
       (currentMessageContent?.includes('?') || !previousReference)
     ) {
