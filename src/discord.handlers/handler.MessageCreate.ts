@@ -1,6 +1,6 @@
 import config from '../config';
 import OpenAI from 'openai';
-import { ClientUser, Events, Guild, Message } from 'discord.js';
+import { Client, ClientUser, Events, Guild, Message } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import { getId, reply } from '../utilities/utilities.cmd';
@@ -44,6 +44,15 @@ const getReference = async (message: Message): Promise<Message | undefined> =>
   message.reference?.messageId
     ? message.channel.messages.fetch(message.reference.messageId)
     : undefined;
+
+/**
+ * Whether a reply is requested.
+ * @param message Message to check.
+ * @param user Discord client user (the bot).
+ * @returns
+ */
+const isReplyRequested = (message: Message, user: ClientUser): boolean =>
+  message.mentions.has(user) || message.content.includes(`@<${user.id}>`);
 
 /**
  * Use OpenAI Chat Completion to reply to a message.
@@ -164,7 +173,9 @@ const replyToMessage = async (
         // Reply to the message.
         const gptMessage = response.choices[0].message?.content;
         if (gptMessage) {
-          await reply(message, gptMessage);
+          if (isReplyRequested(message, user)) {
+            await reply(message, gptMessage);
+          }
           // Update memories with new claims.
           // Do not include questions to save space.
           if (!currentMessageContent?.includes('?')) {
@@ -211,14 +222,18 @@ export const messageReadingAllowed = (
     if (!message.channel) return false;
     if (message.author.bot) return false;
     if (message.cleanContent?.trim().length < 1) return false;
-    if (message.cleanContent?.trim().length > config.discord.maxContentLength)
+    if (message.cleanContent?.trim().length > config.discord.maxContentLength) {
       return false;
+    }
     if (
       message.mentions.everyone ||
-      message.mentions.roles.some((role) => role.mentionable) ||
-      (!message.mentions.has(user) &&
-        !message.content.includes(`@<${user.id}>`))
+      message.mentions.roles.some((role) => role.mentionable)
     ) {
+      return false;
+    }
+    // Special case where the bot listens but doesn't engage.
+    if (!config.chroma.rememberOnlyInteractions) return true;
+    if (!isReplyRequested(message, user as ClientUser)) {
       return false;
     }
     return true;
@@ -241,7 +256,7 @@ export default (
   client.on(Events.MessageCreate, async (message) => {
     try {
       // For security reasons, only specific messages are allowed
-      // to be read.
+      // to be read, unless CHROMA_REMEMBER_ONLY_INTERACTIONS is false.
       if (messageReadingAllowed(client.user, message)) {
         replyToMessage(openai, client.user as ClientUser, message, db, chroma);
       }

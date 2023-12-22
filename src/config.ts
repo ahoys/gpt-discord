@@ -33,6 +33,8 @@ const production = {
     enabled: process.env.CHROMA_ENABLED !== 'false',
     address: process.env.CHROMA_ADDRESS,
     collection: process.env.CHROMA_COLLECTION || 'gptdiscord',
+    rememberOnlyInteractions:
+      process.env.CHROMA_REMEMBER_ONLY_INTERACTIONS !== 'false',
   },
   stackoverflow: {
     api: process.env.STACKOVERFLOW_API || '2.2',
