@@ -72,9 +72,11 @@ export const addToMemory = async (
     const collection = await getCollection(chroma, id);
     if (!collection) return;
     collection.id = id; // Fixes a weird error with ChromaDB.
-    print(
-      `Stored to memory. The size of ${id} collection is now ${await collection.count()}`
-    );
+    if (config.isVerbose) {
+      print(
+        `Stored to memory. The size of ${id} collection is now ${await collection.count()}`
+      );
+    }
     const acceptedIds = [];
     const acceptedContents = [];
     const acceptedMetas: Metadatas = [];
@@ -95,11 +97,6 @@ export const addToMemory = async (
       }
     }
     if (acceptedIds.length < 1) return;
-    console.log({
-      ids: acceptedIds,
-      metadatas: acceptedMetas,
-      documents: acceptedContents,
-    });
     await collection.add({
       ids: acceptedIds,
       metadatas: acceptedMetas,
