@@ -40,13 +40,6 @@ export const searchTheWebForAnswers = async (
       includesQuestion && config.search.googleEnabled
         ? await searchFromGoogle(query, maxLength, 6)
         : undefined;
-    if ((google && google.length) || ddg) {
-      messages.push({
-        role: 'user',
-        content:
-          'Attempt to use the information given earlier to answer the following question.',
-      });
-    }
     if (google && google.length) {
       // To make AI not claim something silly about future events.
       messages.push({
@@ -104,8 +97,15 @@ export const searchTheWebForAnswers = async (
       }
       googleResults.sort((a, b) => b.similarity - a.similarity);
       const googleMessages = googleResults.map((gr) => gr.message).slice(0, 2);
-      return googleMessages.concat(messages);
+      messages.concat(googleMessages);
     }
+    if (messages.length) {
+      messages.push({
+        role: 'user',
+        content: 'Attempt to use the information given.',
+      });
+    }
+    return messages;
   } catch (error) {
     print(error);
   }
