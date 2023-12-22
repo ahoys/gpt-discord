@@ -25,7 +25,7 @@ export const searchTheWebForAnswers = async (
   try {
     if (maxLength < 1) return;
     const includesQuestion = query.includes('?');
-    const messages: TOpenAIMessage[] = [];
+    let messages: TOpenAIMessage[] = [];
     // First search from DuckDuckGo.
     const ddg =
       includesQuestion && config.search.ddgEnabled
@@ -97,13 +97,7 @@ export const searchTheWebForAnswers = async (
       }
       googleResults.sort((a, b) => b.similarity - a.similarity);
       const googleMessages = googleResults.map((gr) => gr.message).slice(0, 2);
-      messages.concat(googleMessages);
-    }
-    if (messages.length) {
-      messages.push({
-        role: 'user',
-        content: 'Attempt to use the information given.',
-      });
+      messages = messages.concat(googleMessages);
     }
     return messages;
   } catch (error) {
