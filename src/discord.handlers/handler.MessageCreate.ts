@@ -168,43 +168,44 @@ const replyToMessage = async (
       hasMemories,
       hasSearchResults
     );
+    // Update memories with new claims.
+    // Do not include questions to save space.
+    if (!currentMessageContent?.includes('?')) {
+      addToMemory(
+        config.chroma.collection + '.' + (message.guild as Guild).id,
+        chroma,
+        [message.id],
+        [currentMessageContent],
+        [
+          {
+            role: 'user',
+            name: message.author.username,
+            temperature,
+            created: message.createdTimestamp,
+            guildId: (message.guild as Guild).id,
+            channelId: message.channel.id,
+            messageId: message.id,
+          },
+        ]
+      );
+    }
     // Execute the chat completion.
-    await executeChatCompletion(openai, {
-      model,
-      temperature,
-      messages,
-    })
-      .then(async (response) => {
-        // Reply to the message.
-        const gptMessage = response.choices[0].message?.content;
-        if (gptMessage) {
-          if (doReply) {
+    // If a reply is requested.
+    if (doReply) {
+      await executeChatCompletion(openai, {
+        model,
+        temperature,
+        messages,
+      })
+        .then(async (response) => {
+          // Reply to the message.
+          const gptMessage = response.choices[0].message?.content;
+          if (gptMessage) {
             await reply(message, gptMessage);
           }
-          // Update memories with new claims.
-          // Do not include questions to save space.
-          if (!currentMessageContent?.includes('?')) {
-            addToMemory(
-              config.chroma.collection + '.' + (message.guild as Guild).id,
-              chroma,
-              [message.id],
-              [currentMessageContent],
-              [
-                {
-                  role: 'user',
-                  name: message.author.username,
-                  temperature,
-                  created: message.createdTimestamp,
-                  guildId: (message.guild as Guild).id,
-                  channelId: message.channel.id,
-                  messageId: message.id,
-                },
-              ]
-            );
-          }
-        }
-      })
-      .catch((error) => print(error?.message || error));
+        })
+        .catch((error) => print(error?.message || error));
+    }
   } catch (error) {
     print(error);
   }
