@@ -91,6 +91,7 @@ export const addToMemory = async (
         typeof meta.guildId === 'string' &&
         typeof meta.messageId === 'string'
       ) {
+        meta.name = meta.name.replace(/./g, '');
         acceptedIds.push(ids[index]);
         acceptedContents.push(contents[index]);
         acceptedMetas.push(meta);
