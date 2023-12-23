@@ -73,7 +73,8 @@ const replyToMessage = async (
     let totalLength = 0;
     let safeLimit = MAX_REPLIES_TO_FETCH;
     let previousReference: Message | undefined = await getReference(message);
-    if (previousReference) {
+    const doReply = isReplyRequested(message, user);
+    if (doReply && previousReference) {
       const formedMessage = getFormedMessage(user, previousReference);
       lastReference = formedMessage;
       messages.push(formedMessage);
@@ -110,13 +111,15 @@ const replyToMessage = async (
     let hasMemories = false;
     // Extract memories to improve the reply.
     const vector = await executeEmbedding(openai, currentMessageContent);
-    const memories = await getFromMemory(
-      config.chroma.collection + '.' + (message.guild as Guild).id,
-      chroma,
-      vector,
-      currentMessageContent
-    );
-    if (Array.isArray(memories) && memories.length > 0) {
+    const memories = doReply
+      ? await getFromMemory(
+          config.chroma.collection + '.' + (message.guild as Guild).id,
+          chroma,
+          vector,
+          currentMessageContent
+        )
+      : undefined;
+    if (doReply && Array.isArray(memories) && memories.length > 0) {
       hasMemories = true;
       for (const memory of memories) {
         messages.unshift(memory);
@@ -125,8 +128,8 @@ const replyToMessage = async (
     // Look for an answer to the question from external sources.
     let hasSearchResults = false;
     if (
+      doReply &&
       config.search.enabled &&
-      isReplyRequested(message, user) &&
       (currentMessageContent || '').length < 256 &&
       !currentMessageContent?.includes('`') &&
       (currentMessageContent?.includes('?') || !previousReference)
@@ -147,7 +150,7 @@ const replyToMessage = async (
     // Finally, add the system message.
     const dbId = getId((message.guild as Guild).id, message.channel.id);
     const guildSystem = db.systems.getKey(dbId);
-    if (guildSystem || config.openai.defaultSystem) {
+    if (doReply && (guildSystem || config.openai.defaultSystem)) {
       messages.unshift({
         role: 'system',
         content: (guildSystem || (config.openai.defaultSystem as string) || '')
@@ -174,7 +177,7 @@ const replyToMessage = async (
         // Reply to the message.
         const gptMessage = response.choices[0].message?.content;
         if (gptMessage) {
-          if (isReplyRequested(message, user)) {
+          if (doReply) {
             await reply(message, gptMessage);
           }
           // Update memories with new claims.

@@ -202,11 +202,15 @@ export const getFromMemory = async (
         }
       }
       // Create messages from selected memories.
-      return selectedMemories.slice(0, 3).map((memory) => ({
+      const returnedMemories = selectedMemories.slice(0, 3).map((memory) => ({
         role: memory.meta.role,
         name: memory.meta.name,
         content: memory.content,
       }));
+      if (config.isVerbose) {
+        print(`Found ${returnedMemories.length} memories.`);
+      }
+      return returnedMemories;
     }
     return undefined;
   } catch (error) {
