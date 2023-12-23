@@ -30,6 +30,7 @@ const getFormedMessage = (
   parse = false
 ): ChatCompletionMessage | ChatCompletionUserMessageParam => ({
   role: message.author.id === user.id ? 'assistant' : 'user',
+  name: message.author.username?.replace(/[^a-zA-Z0-9]/g, ''),
   content: parse
     ? message.cleanContent.replace(`@${user.username} `, '').trim()
     : message.cleanContent,
