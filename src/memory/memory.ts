@@ -91,7 +91,6 @@ export const addToMemory = async (
         typeof meta.guildId === 'string' &&
         typeof meta.messageId === 'string'
       ) {
-        meta.name = meta.name.replace(/./g, '');
         acceptedIds.push(ids[index]);
         acceptedContents.push(contents[index]);
         acceptedMetas.push(meta);
@@ -204,7 +203,7 @@ export const getFromMemory = async (
       // Create messages from selected memories.
       const returnedMemories = selectedMemories.slice(0, 3).map((memory) => ({
         role: memory.meta.role,
-        name: memory.meta.name,
+        name: memory.meta.name.replace(/[^a-zA-Z0-9]/g, ''),
         content: memory.content,
       }));
       if (config.isVerbose) {

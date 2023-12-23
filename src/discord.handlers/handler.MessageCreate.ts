@@ -1,6 +1,6 @@
 import config from '../config';
 import OpenAI from 'openai';
-import { Client, ClientUser, Events, Guild, Message } from 'discord.js';
+import { ClientUser, Events, Guild, Message } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient } from '../types';
 import { getId, reply } from '../utilities/utilities.cmd';
