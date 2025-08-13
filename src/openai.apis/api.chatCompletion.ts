@@ -12,8 +12,19 @@ export const executeChatCompletion = async (
   if (config.isDevelopment || config.isVerbose) {
     print(configuration);
   }
+  if (['gpt-5'].includes(configuration.model)) {
+    return await openai.chat.completions.create({
+      max_completion_tokens: config.openai.maxTokens,
+      model: 'gpt-5',
+      n: 1,
+      stream: false,
+      messages: configuration.messages,
+      verbosity: 'low',
+      reasoning_effort: 'minimal',
+    });
+  }
   return await openai.chat.completions.create({
-    max_completion_tokens: config.openai.maxTokens,
+    max_tokens: config.openai.maxTokens,
     n: 1,
     stream: false,
     ...configuration,
