@@ -2,7 +2,6 @@ import OpenAI from 'openai';
 import { JSONScribeFile } from 'jsonscribe';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Client as DiscordJs, Collection } from 'discord.js';
-import { ChromaClient } from 'chromadb';
 import { TOpenAIMessage } from './discord.handlers/handler.MessageCreate';
 
 export interface IDiscordClient extends DiscordJs {
@@ -39,7 +38,6 @@ export interface ICmdProps {
   db: IDatabase;
   interaction: ChatInputCommandInteraction;
   openai: OpenAI;
-  chroma: ChromaClient;
   paused: boolean;
   handlePause: (v: boolean) => void;
 }

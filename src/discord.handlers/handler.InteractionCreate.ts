@@ -3,17 +3,11 @@ import OpenAI from 'openai';
 import { Events, GuildMemberRoleManager } from 'discord.js';
 import { print } from 'logscribe';
 import { ICmdProps, IDatabase, IDiscordClient } from '../types';
-import { ChromaClient } from 'chromadb';
 
 /**
  * Handle incoming interactions.
  */
-export default (
-  client: IDiscordClient,
-  openai: OpenAI,
-  db: IDatabase,
-  chroma: ChromaClient
-) =>
+export default (client: IDiscordClient, openai: OpenAI, db: IDatabase) =>
   client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
     if (!interaction.guild) return;
@@ -45,7 +39,6 @@ export default (
       openai,
       discord: client,
       paused: db.paused,
-      chroma,
       handlePause: (v: boolean) => {
         db.paused = v;
       },

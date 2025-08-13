@@ -6,10 +6,6 @@ import { IDatabase, IDiscordClient } from '../types';
 import { getId, reply } from '../utilities/utilities.cmd';
 import { executeChatCompletion } from '../openai.apis/api.chatCompletion';
 import { getDynamicTemperature } from '../utilities/utilities.temperature';
-import { addToMemory, getFromMemory } from '../memory/memory';
-import { ChromaClient } from 'chromadb';
-import { searchTheWebForAnswers } from '../search/search';
-import { executeEmbedding } from '../openai.apis/api.createEmbedding';
 import {
   ChatCompletionMessage,
   ChatCompletionSystemMessageParam,
@@ -28,13 +24,22 @@ const getFormedMessage = (
   user: ClientUser,
   message: Message,
   parse = false
-): ChatCompletionMessage | ChatCompletionUserMessageParam => ({
-  role: message.author.id === user.id ? 'assistant' : 'user',
-  name: message.author.username?.replace(/[^a-zA-Z0-9]/g, ''),
-  content: parse
+): ChatCompletionMessage | ChatCompletionUserMessageParam => {
+  const isAssistant = message.author.id === user.id;
+  const role = isAssistant ? 'assistant' : 'user';
+  const name = message.author.username?.replace(/[^a-zA-Z0-9]/g, '');
+  const content = parse
     ? message.cleanContent.replace(`@${user.username} `, '').trim()
-    : message.cleanContent,
-});
+    : message.cleanContent;
+  if (isAssistant) {
+    return { role, content } as ChatCompletionMessage;
+  }
+  return {
+    role,
+    name,
+    content,
+  } as ChatCompletionUserMessageParam;
+};
 
 /**
  * Get the reference message.
@@ -63,8 +68,7 @@ const replyToMessage = async (
   openai: OpenAI,
   user: ClientUser,
   message: Message,
-  db: IDatabase,
-  chroma: ChromaClient
+  db: IDatabase
 ) => {
   try {
     // See if the message is a reply to another message.
@@ -104,49 +108,7 @@ const replyToMessage = async (
     }
     // Add the message that triggered the reply.
     const currentMessage = getFormedMessage(user, message, true);
-    const currentMessageContent =
-      typeof currentMessage.content === 'string'
-        ? currentMessage.content || ''
-        : '';
     messages.push(currentMessage);
-    let hasMemories = false;
-    // Extract memories to improve the reply.
-    const vector = await executeEmbedding(openai, currentMessageContent);
-    const memories = doReply
-      ? await getFromMemory(
-          config.chroma.collection + '.' + (message.guild as Guild).id,
-          chroma,
-          vector,
-          currentMessageContent
-        )
-      : undefined;
-    if (doReply && Array.isArray(memories) && memories.length > 0) {
-      hasMemories = true;
-      for (const memory of memories) {
-        messages.unshift(memory);
-      }
-    }
-    // Look for an answer to the question from external sources.
-    let hasSearchResults = false;
-    if (
-      doReply &&
-      config.search.enabled &&
-      (currentMessageContent || '').length < 256 &&
-      !currentMessageContent?.includes('`') &&
-      (currentMessageContent?.includes('?') || !previousReference)
-    ) {
-      const searchResults = await searchTheWebForAnswers(
-        openai,
-        vector,
-        currentMessageContent
-      );
-      if (searchResults) {
-        hasSearchResults = true;
-        for (const searchResult of searchResults) {
-          messages.unshift(searchResult);
-        }
-      }
-    }
     if (messages.length < 1) return;
     // Finally, add the system message.
     const dbId = getId((message.guild as Guild).id, message.channel.id);
@@ -161,34 +123,7 @@ const replyToMessage = async (
     }
     // Define configuration for the chat completion.
     const model = db.models.getKey(dbId) ?? config.openai.defaultModel;
-    const temperature = getDynamicTemperature(
-      db,
-      dbId,
-      !!lastReference,
-      hasMemories,
-      hasSearchResults
-    );
-    // Update memories with new claims.
-    // Do not include questions to save space.
-    if (!currentMessageContent?.includes('?')) {
-      addToMemory(
-        config.chroma.collection + '.' + (message.guild as Guild).id,
-        chroma,
-        [message.id],
-        [currentMessageContent],
-        [
-          {
-            role: 'user',
-            name: message.author.username,
-            temperature,
-            created: message.createdTimestamp,
-            guildId: (message.guild as Guild).id,
-            channelId: message.channel.id,
-            messageId: message.id,
-          },
-        ]
-      );
-    }
+    const temperature = getDynamicTemperature(db, dbId, !!lastReference);
     // Execute the chat completion.
     // If a reply is requested.
     if (doReply) {
@@ -237,8 +172,6 @@ export const messageReadingAllowed = (
     ) {
       return false;
     }
-    // Special case where the bot listens but doesn't engage.
-    if (!config.chroma.rememberOnlyInteractions) return true;
     if (!isReplyRequested(message, user as ClientUser)) {
       return false;
     }
@@ -253,18 +186,13 @@ export const messageReadingAllowed = (
  * Handle incoming messages.
  * If the message mentions the bot, reply with a chat completion.
  */
-export default (
-  client: IDiscordClient,
-  openai: OpenAI,
-  db: IDatabase,
-  chroma: ChromaClient
-) =>
+export default (client: IDiscordClient, openai: OpenAI, db: IDatabase) =>
   client.on(Events.MessageCreate, async (message) => {
     try {
       // For security reasons, only specific messages are allowed
-      // to be read, unless CHROMA_REMEMBER_ONLY_INTERACTIONS is false.
+      // to be read.
       if (messageReadingAllowed(client.user, message)) {
-        replyToMessage(openai, client.user as ClientUser, message, db, chroma);
+        replyToMessage(openai, client.user as ClientUser, message, db);
       }
     } catch (error) {
       print(error);

@@ -10,7 +10,6 @@ import { Client as DiscordJs, GatewayIntentBits, Collection } from 'discord.js';
 import { print } from 'logscribe';
 import { IDatabase, IDiscordClient, IMemoryObject } from './types';
 import { getDynamicCommands } from './utilities/utilities.cmd';
-import { ChromaClient } from 'chromadb';
 
 print(config);
 
@@ -36,23 +35,6 @@ const discord = new DiscordJs({
 const openai = new OpenAI({
   apiKey: config.openai.apiKey,
 });
-
-// Create ChromaDB client.
-const chroma = new ChromaClient({
-  path: config.chroma.address,
-});
-
-// To check if the connection to the database is working.
-const listCollections = async () => {
-  try {
-    const collections = await chroma.listCollections();
-    print(collections);
-  } catch (error) {
-    print(error);
-  }
-};
-
-listCollections();
 
 const bootstrap = async () => {
   // The database, which is basically
@@ -93,8 +75,8 @@ const bootstrap = async () => {
 
   // Register handlers.
   DiscordReady(discord);
-  DiscordInteractionCreate(discord, openai, db, chroma);
-  DiscordMessageCreate(discord, openai, db, chroma);
+  DiscordInteractionCreate(discord, openai, db);
+  DiscordMessageCreate(discord, openai, db);
 
   // Login to discord. This will then trigger the Ready-handler.
   discord.login(config.discord.token);

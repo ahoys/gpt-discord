@@ -14,9 +14,8 @@ module.exports = {
     .setDescription(
       'Will reset the bot entirely, making the bot forget everything.'
     ),
-  execute: async ({ interaction, chroma }: ICmdProps) => {
+  execute: async ({ interaction }: ICmdProps) => {
     await interaction.deferReply({ ephemeral: true });
-    await chroma.reset();
     await editReply(interaction, 'Done.');
   },
 };
