@@ -3,5 +3,7 @@ build
 node_modules
 *.nedb
 *.db
-*.json
+db/*.json
+input.json
 *.log
+.vscode
