@@ -20,7 +20,7 @@ export const executeChatCompletion = async (
       stream: false,
       messages: configuration.messages,
       verbosity: 'low',
-      reasoning_effort: 'minimal',
+      reasoning_effort: 'high',
     });
   }
   return await openai.chat.completions.create({
