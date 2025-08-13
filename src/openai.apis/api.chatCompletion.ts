@@ -13,7 +13,7 @@ export const executeChatCompletion = async (
     print(configuration);
   }
   return await openai.chat.completions.create({
-    max_tokens: config.openai.maxTokens,
+    max_completion_tokens: config.openai.maxTokens,
     n: 1,
     stream: false,
     ...configuration,
