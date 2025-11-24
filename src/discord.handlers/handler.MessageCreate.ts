@@ -57,14 +57,14 @@ const getReference = async (message: Message): Promise<Message | undefined> =>
  * @param user Discord client user (the bot).
  * @returns
  */
-const isReplyRequested = (message: Message, user: ClientUser): boolean =>
+export const isReplyRequested = (message: Message, user: ClientUser): boolean =>
   message.mentions.has(user) || message.content.includes(`@<${user.id}>`);
 
 /**
  * Use OpenAI Chat Completion to reply to a message.
  * @param message
  */
-const replyToMessage = async (
+export const replyToMessage = async (
   openai: OpenAI,
   user: ClientUser,
   message: Message,
@@ -154,7 +154,8 @@ const replyToMessage = async (
  */
 export const messageReadingAllowed = (
   user: ClientUser | null,
-  message: Message
+  message: Message,
+  checkForReply: boolean = true
 ): boolean => {
   try {
     if (!user) return false;
@@ -172,7 +173,7 @@ export const messageReadingAllowed = (
     ) {
       return false;
     }
-    if (!isReplyRequested(message, user as ClientUser)) {
+    if (checkForReply && !isReplyRequested(message, user as ClientUser)) {
       return false;
     }
     return true;
