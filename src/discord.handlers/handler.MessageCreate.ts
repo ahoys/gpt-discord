@@ -11,6 +11,7 @@ import {
   ChatCompletionSystemMessageParam,
   ChatCompletionUserMessageParam,
 } from 'openai/resources';
+import { executeModeration } from '../openai.apis/api.moderations';
 
 const MAX_REPLY_LENGTH = 1024; // The higher this goes, the more expensive is the query.
 const MAX_REPLIES_TO_FETCH = 8; // Discord may buffer if too much is fetched at once.
@@ -147,14 +148,79 @@ const replyToMessage = async (
 };
 
 /**
+ * Moderate a message.
+ * @param openai OpenAI client instance.
+ * @param message Message to moderate.
+ * @param db Database instance.
+ * @returns Whether the message was flagged.
+ */
+const moderateMessage = async (
+  openai: OpenAI,
+  message: Message,
+  db: IDatabase
+): Promise<boolean> => {
+  // Implementation for message moderation
+  try {
+    const guildId = message.guild ? (message.guild as Guild).id : '';
+    const channelId = message.channel.id;
+    const dbId = getId(guildId, channelId);
+    const moderationSetting =
+      db.moderation.getKey(dbId) || config.moderation.defaultModeration;
+    const lvl = Number(moderationSetting);
+    if (lvl <= 0) {
+      return false;
+    }
+    let flagged = false;
+    const r = await executeModeration(openai, message.cleanContent);
+    const results = r.results[0];
+    if (
+      lvl === 1 &&
+      (results.categories['hate/threatening'] ||
+        results.categories['harassment/threatening'])
+    ) {
+      flagged = true;
+    }
+    if (lvl <= 2 && results.categories.hate) {
+      flagged = true;
+    }
+    if (lvl <= 3 && results.categories.harassment) {
+      flagged = true;
+    }
+    if (flagged) {
+      // Take action on the flagged message by attempting to remove the message.
+      await message.delete().catch(() => {
+        print(`Failed to delete message ID: ${message.id} during moderation.`);
+      });
+      // Additionally, inform the user about the moderation action via a private reply.
+      await message.author
+        .send(
+          `Your message of the server "${message.guild?.name}" was removed due to violating the community guidelines. ` +
+            'Please adhere to the rules to avoid further actions.'
+        )
+        .catch(() => {
+          print(
+            `Failed to send moderation DM to user ID: ${message.author.id}.`
+          );
+        });
+    }
+    return flagged;
+  } catch (error) {
+    print(error);
+    return true;
+  }
+};
+
+/**
  * Check if the message is allowed to be read.
  * @param user Discord client user (the bot).
  * @param message Message to validate.
+ * @param moderation Whether this is a moderation check.
  * @returns {boolean} True if the message is allowed to be read.
  */
 export const messageReadingAllowed = (
   user: ClientUser | null,
-  message: Message
+  message: Message,
+  moderation = false
 ): boolean => {
   try {
     if (!user) return false;
@@ -162,6 +228,7 @@ export const messageReadingAllowed = (
     if (!message.guild) return false;
     if (!message.channel) return false;
     if (message.author.bot) return false;
+    if (moderation) return true;
     if (message.cleanContent?.trim().length < 1) return false;
     if (message.cleanContent?.trim().length > config.discord.maxContentLength) {
       return false;
@@ -191,7 +258,10 @@ export default (client: IDiscordClient, openai: OpenAI, db: IDatabase) =>
     try {
       // For security reasons, only specific messages are allowed
       // to be read.
-      if (messageReadingAllowed(client.user, message)) {
+      const flagged: boolean = messageReadingAllowed(client.user, message, true)
+        ? await moderateMessage(openai, message, db)
+        : false;
+      if (!flagged && messageReadingAllowed(client.user, message)) {
         replyToMessage(openai, client.user as ClientUser, message, db);
       }
     } catch (error) {
