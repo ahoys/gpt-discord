@@ -39,7 +39,7 @@ const production = {
     ddgEnabled: process.env.SEARCH_DDGENABLED !== 'false',
   },
   moderation: {
-    model: "omni-moderation",
+    model: 'omni-moderation-latest',
     defaultModeration: Number(process.env.MODERATION_DEFAULTMODERATION) || 0,
   },
 };
