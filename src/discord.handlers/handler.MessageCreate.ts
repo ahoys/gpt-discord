@@ -188,18 +188,23 @@ const moderateMessage = async (
     }
     if (flagged) {
       // Take action on the flagged message by attempting to remove the message.
-      await message.delete().catch(() => {
-        print(`Failed to delete message ID: ${message.id} during moderation.`);
-      });
-      // Additionally, inform the user about the moderation action via a private reply.
-      await message.author
-        .send(
-          `Your message of the server "${message.guild?.name}" was removed due to violating the community guidelines. ` +
-            'Please adhere to the rules to avoid further actions.'
-        )
+      await message
+        .delete()
+        .then(async () => {
+          await message.author
+            .send(
+              `Your message of the server "${message.guild?.name}" was removed due to violating the community guidelines. ` +
+                'Please adhere to the rules to avoid further actions.'
+            )
+            .catch(() => {
+              print(
+                `Failed to send moderation DM to user ID: ${message.author.id}.`
+              );
+            });
+        })
         .catch(() => {
           print(
-            `Failed to send moderation DM to user ID: ${message.author.id}.`
+            `Failed to delete message ID: ${message.id} during moderation.`
           );
         });
     }
