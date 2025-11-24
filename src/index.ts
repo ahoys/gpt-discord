@@ -54,6 +54,9 @@ const bootstrap = async () => {
     embeddings: jsonscribe<IMemoryObject[]>({
       path: path.join(__dirname, '..', 'db', 'embeddings.json'),
     }),
+    moderation: jsonscribe<string>({
+      path: path.join(__dirname, '..', 'db', 'moderation.json'),
+    }),
   };
 
   // Read all official commands from the commands-folder.

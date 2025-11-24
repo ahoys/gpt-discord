@@ -31,6 +31,7 @@ export interface IDatabase {
   systems: JSONScribeFile<string>;
   shortMemory: IMemoryObject[];
   embeddings: JSONScribeFile<IMemoryObject[]>;
+  moderation: JSONScribeFile<string>;
 }
 
 export interface ICmdProps {

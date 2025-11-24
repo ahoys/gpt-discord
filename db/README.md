@@ -9,3 +9,7 @@ Stores channel specific temperatures.
 ## systems.json
 
 Stores channel specific systems.
+
+## moderation.json
+
+Stores channel specific moderation settings.

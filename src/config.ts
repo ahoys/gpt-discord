@@ -38,6 +38,9 @@ const production = {
     googleEnabled: process.env.SEARCH_GOOGLEENABLED !== 'false',
     ddgEnabled: process.env.SEARCH_DDGENABLED !== 'false',
   },
+  moderation: {
+    defaultModeration: Number(process.env.MODERATION_DEFAULTMODERATION) || 0,
+  },
 };
 
 const development: typeof production = {
