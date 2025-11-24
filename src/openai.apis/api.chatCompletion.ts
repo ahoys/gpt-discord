@@ -12,10 +12,10 @@ export const executeChatCompletion = async (
   if (config.isDevelopment || config.isVerbose) {
     print(configuration);
   }
-  if (['gpt-5'].includes(configuration.model)) {
+  if (configuration.model.includes('gpt-5')) {
     return await openai.chat.completions.create({
       max_completion_tokens: config.openai.maxTokens,
-      model: 'gpt-5',
+      model: configuration.model,
       n: 1,
       stream: false,
       messages: configuration.messages,
