@@ -7,21 +7,20 @@ An Open AI powered Discord bot with great flexibility and security.
 - OpenAI account and a valid API-key.
 - Discord application for the bot (see inviting the bot below).
 - Modern Node.js with NPM installed.
-- Yarn installed `npm i -g yarn`
 
 # Installation
 
 ### How to install for production
 
-- `yarn install --prod`
+- `npm ci`
 - Create `.env`, see the configuration below.
-- Run with `yarn start`
+- Run with `npm start`
 
 ### How to install for development
 
-- `yarn install`
+- `npm i`
 - Create `.dev.env` and `.jest.env`, see the configuration below.
-- Run with `yarn watch`
+- Run with `npm run watch`
 
 ### Configuration for .env
 
